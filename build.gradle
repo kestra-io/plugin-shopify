@@ -51,32 +51,25 @@ dependencies {
     // kestra
     annotationProcessor group: "io.kestra", name: "processor", version: kestraVersion
     compileOnly group: "io.kestra", name: "core", version: kestraVersion
-    compileOnly group: "io.kestra", name: "script", version: kestraVersion
-
-    // HTTP client dependencies
-    implementation "io.micronaut:micronaut-http-client"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-    implementation "com.fasterxml.jackson.core:jackson-core"
 }
 
 
 /**********************************************************************************************************************\
  * Test
  **********************************************************************************************************************/
-// Temporarily disable test task due to JVM version issues
-// test {
-//     useJUnitPlatform()
-// }
 
-// testlogger {
-//     theme = "mocha-parallel"
-//     showExceptions = true
-//     showFullStackTraces = true
-//     showStandardStreams = true
-//     showPassedStandardStreams = false
-//     showSkippedStandardStreams = true
-// }
+test {
+    useJUnitPlatform()
+}
+
+testlogger {
+    theme = "mocha-parallel"
+    showExceptions = true
+    showFullStackTraces = true
+    showStandardStreams = true
+    showPassedStandardStreams = false
+    showSkippedStandardStreams = true
+}
 
 dependencies {
     // Platform
@@ -127,21 +120,17 @@ dependencies {
     agent "org.aspectj:aspectjweaver:1.9.24"
 }
 
-// Temporarily disable test and jacoco tasks
-// test {
-//     jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
-// }
-
 /**********************************************************************************************************************\
  * Jacoco
  **********************************************************************************************************************/
-// test {
-//     finalizedBy jacocoTestReport
-// }
+test {
+    jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
+    finalizedBy jacocoTestReport
+}
 
-// jacocoTestReport {
-//     dependsOn test
-// }
+jacocoTestReport {
+    dependsOn test
+}
 
 /**********************************************************************************************************************\
  * Publish

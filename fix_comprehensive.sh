@@ -1,3 +1,12 @@
+#!/bin/bash
+
+# Script to fix all Shopify plugin issues based on maintainer feedback
+
+echo "Starting comprehensive fixes for Shopify plugin..."
+
+# 1. Fix AbstractShopifyTask.java - Add @NotNull and use Kestra HTTP client
+echo "1. Fixing AbstractShopifyTask.java..."
+cat > src/main/java/io/kestra/plugin/shopify/AbstractShopifyTask.java << 'EOF'
 package io.kestra.plugin.shopify;
 
 import io.kestra.core.models.property.Property;
@@ -95,3 +104,21 @@ public abstract class AbstractShopifyTask extends Task {
         return JacksonMapper.ofJson().readValue(response.body(), Map.class);
     }
 }
+EOF
+
+# 2. Fix build.gradle
+echo "2. Fixing build.gradle..."
+sed -i '' 's/compileOnly group: "io.kestra", name: "script", version: kestraVersion//g' build.gradle
+sed -i '' '/\/\/ HTTP client dependencies/,/implementation "com.fasterxml.jackson.core:jackson-databind"/d' build.gradle
+sed -i '' 's/\/\/ test {/test {/g' build.gradle
+sed -i '' 's/\/\/ }/}/g' build.gradle
+sed -i '' 's/\/\/ Temporarily disable test task due to JVM version issues//g' build.gradle
+
+# 3. Fix package-info.java
+echo "3. Fixing package-info.java..."
+sed -i '' 's/categories = PluginSubGroup.PluginCategory.CLOUD/categories = PluginSubGroup.PluginCategory.TOOL/g' src/main/java/io/kestra/plugin/shopify/package-info.java
+
+echo "Comprehensive fixes completed!"
+EOF
+
+chmod +x fix_comprehensive.sh

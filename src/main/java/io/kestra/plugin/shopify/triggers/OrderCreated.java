@@ -186,7 +186,7 @@ public class OrderCreated extends AbstractTrigger implements PollingTriggerInter
 
     @Override
     public Duration getInterval() {
-        return interval != null ? Property.of(Duration.ofMinutes(5)).getValue() : Duration.ofMinutes(5);
+        return interval != null ? interval.getValue() : Duration.ofMinutes(5);
     }
 
     @Builder
