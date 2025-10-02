@@ -60,15 +60,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-testlogger {
-    theme = "mocha-parallel"
-    showExceptions = true
-    showFullStackTraces = true
-    showStandardStreams = true
-    showPassedStandardStreams = false
-    showSkippedStandardStreams = true
+    jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
+    finalizedBy jacocoTestReport
 }
 
 dependencies {
@@ -123,10 +116,6 @@ dependencies {
 /**********************************************************************************************************************\
  * Jacoco
  **********************************************************************************************************************/
-test {
-    jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
-    finalizedBy jacocoTestReport
-}
 
 jacocoTestReport {
     dependsOn test

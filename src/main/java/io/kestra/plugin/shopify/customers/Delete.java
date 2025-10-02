@@ -1,21 +1,20 @@
 package io.kestra.plugin.shopify.customers;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.io.IOException;
-import java.lang.InterruptedException;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
+import io.kestra.core.models.tasks.VoidOutput;
 import io.kestra.core.runners.RunContext;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @SuperBuilder
 @ToString
@@ -24,77 +23,57 @@ import java.net.URI;
 @NoArgsConstructor
 @Schema(
     title = "Delete a customer from Shopify store",
-    description = "Permanently delete a customer from your Shopify store. Note: This action cannot be undone."
+    description = "Delete a customer by their ID."
 )
 @Plugin(
     examples = {
         @Example(
-        title = "Delete customer by ID",
-        full = true,
-        code = """
-        id: shopify_delete_customer
-        namespace: company.team
-
-        tasks:
-          - id: delete_customer
-            type: io.kestra.plugin.shopify.customers.DeleteCustomer
-            storeDomain: my-store.myshopify.com
-            accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-            customerId: 123456789
-        """
+            title = "Delete customer by ID",
+            full = true,
+            code = """
+                id: shopify_delete_customer
+                namespace: company.team
+                
+                tasks:
+                  - id: delete_customer
+                    type: io.kestra.plugin.shopify.customers.Delete
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                    customerId: 12345
+                """
         )
     }
 )
-public class DeleteCustomer extends AbstractShopifyTask implements RunnableTask<DeleteCustomer.Output> {
+public class Delete extends AbstractShopifyTask implements RunnableTask<VoidOutput> {
 
     @Schema(
         title = "Customer ID",
         description = "The ID of the customer to delete"
     )
+    @NotNull
     private Property<Long> customerId;
 
     @Override
-    public Output run(RunContext runContext) throws Exception {
-        HttpClient client = buildHttpClient(runContext);
-        Long customerIdValue = runContext.render(customerId).as(Long.class)
-        .orElseThrow(() -> new IllegalArgumentException("Customer ID is required"));
-
+    public VoidOutput run(RunContext runContext) throws Exception {
+        var client = runContext.http().client();
+        
+        Long customerIdValue = runContext.render(customerId).as(Long.class).orElseThrow();
+        
         URI uri = buildApiUrl(runContext, "/customers/" + customerIdValue + ".json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri);
+        HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
         runContext.logger().debug("Deleting customer {} from Shopify API: {}", customerIdValue, uri);
         
         handleRateLimit();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         
-        // For DELETE requests, Shopify returns 200 with empty body on success
-        if (response.statusCode() != 200) {
-        String errorBody = response.body() != null ? response.body() : "Unknown error";
-        throw new RuntimeException(String.format("Failed to delete customer with status %d: %s", 
-            response.statusCode(), errorBody));
+        if (response.statusCode() >= 400) {
+            throw new RuntimeException(String.format("Failed to delete customer %d: %s", 
+                customerIdValue, response.body()));
         }
 
-        runContext.logger().info("Successfully deleted customer (ID: {}) from Shopify", customerIdValue);
-
-        return Output.builder()
-        .customerId(customerIdValue)
-        .deleted(true)
-        .build();
-        }
+        runContext.logger().info("Successfully deleted customer {} from Shopify", customerIdValue);
+        
+        return null;
     }
-
-    @Builder
-    @Getter
-    public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(
-        title = "Deleted customer ID",
-        description = "The ID of the customer that was deleted"
-        )
-        private final Long customerId;
-
-        @Schema(
-        title = "Deletion status",
-        description = "Whether the customer was successfully deleted"
-        )
-        private final Boolean deleted;
-    }
+}
