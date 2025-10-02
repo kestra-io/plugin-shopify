@@ -72,17 +72,17 @@ import java.util.Map;import java.util.Map;
 
             code = """        code = """
 
-                id: shopify_list_customers            id: shopify_list_customers
+                        id: shopify_list_customers                    id: shopify_list_customers
 
-                namespace: company.team            namespace: company.team
+                        namespace: company.team                    namespace: company.team
 
                 
 
-                tasks:            tasks:
+                        tasks:                    tasks:
 
-                  - id: list_customers              - id: list_customers
+                          - id: list_customers                      - id: list_customers
 
-                    type: io.kestra.plugin.shopify.customers.List                type: io.kestra.plugin.shopify.customers.ListCustomers
+                    type: io.kestra.plugin.shopify.customers.List                type: io.kestra.plugin.shopify.customers.List
 
                     storeDomain: my-store.myshopify.com                storeDomain: my-store.myshopify.com
 
@@ -100,17 +100,17 @@ import java.util.Map;import java.util.Map;
 
             code = """        code = """
 
-                id: shopify_list_customers_filtered            id: shopify_list_customers_filtered
+                        id: shopify_list_customers_filtered                    id: shopify_list_customers_filtered
 
-                namespace: company.team            namespace: company.team
+                        namespace: company.team                    namespace: company.team
 
                 
 
-                tasks:            tasks:
+                        tasks:                    tasks:
 
-                  - id: list_customers              - id: list_customers
+                          - id: list_customers                      - id: list_customers
 
-                    type: io.kestra.plugin.shopify.customers.List                type: io.kestra.plugin.shopify.customers.ListCustomers
+                    type: io.kestra.plugin.shopify.customers.List                type: io.kestra.plugin.shopify.customers.List
 
                     storeDomain: my-store.myshopify.com                storeDomain: my-store.myshopify.com
 
@@ -128,7 +128,7 @@ import java.util.Map;import java.util.Map;
 
 ))
 
-public class List extends AbstractShopifyTask implements RunnableTask<List.Output> {public class ListCustomers extends AbstractShopifyTask implements RunnableTask<ListCustomers.Output> {
+public class List extends AbstractShopifyTask implements RunnableTask<List.Output> {public class List extends AbstractShopifyTask implements RunnableTask<List.Output> {
 
 
 

@@ -14,7 +14,7 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@MicronautTest
+@KestraTest
 class ListCustomersTest {
     @Inject
     private RunContextFactory runContextFactory;

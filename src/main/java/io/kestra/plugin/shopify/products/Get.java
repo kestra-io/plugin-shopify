@@ -34,12 +34,12 @@ import java.util.Map;
         title = "Get product by ID",
         full = true,
         code = """
-        id: shopify_get_product
-        namespace: company.team
+                id: shopify_get_product
+                namespace: company.team
 
-        tasks:
-          - id: get_product
-            type: io.kestra.plugin.shopify.products.GetProduct
+                tasks:
+                  - id: get_product
+            type: io.kestra.plugin.shopify.products.Get
             storeDomain: my-store.myshopify.com
             accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
             productId: 123456789
@@ -47,7 +47,7 @@ import java.util.Map;
         )
     }
 )
-public class GetProduct extends AbstractShopifyTask implements RunnableTask<GetProduct.Output> {
+public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output> {
 
     @Schema(
         title = "Product ID",

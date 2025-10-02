@@ -37,12 +37,12 @@ import java.util.Map;
         title = "Create a simple order",
         full = true,
         code = """
-        id: shopify_create_order
-        namespace: company.team
+                id: shopify_create_order
+                namespace: company.team
 
-        tasks:
-          - id: create_order
-            type: io.kestra.plugin.shopify.orders.CreateOrder
+                tasks:
+                  - id: create_order
+            type: io.kestra.plugin.shopify.orders.Create
             storeDomain: my-store.myshopify.com
             accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
             customerEmail: "customer@example.com"
@@ -54,7 +54,7 @@ import java.util.Map;
         )
     }
 )
-public class CreateOrder extends AbstractShopifyTask implements RunnableTask<CreateOrder.Output> {
+public class Create extends AbstractShopifyTask implements RunnableTask<Create.Output> {
 
     @Schema(
         title = "Customer email",

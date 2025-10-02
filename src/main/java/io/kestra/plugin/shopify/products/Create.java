@@ -1,22 +1,23 @@
 package io.kestra.plugin.shopify.products;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.io.IOException;
-import java.lang.InterruptedException;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Product;
+import io.kestra.plugin.shopify.models.ProductStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 
 @SuperBuilder
@@ -34,12 +35,12 @@ import java.util.Map;
         title = "Create a simple product",
         full = true,
         code = """
-        id: shopify_create_product
-        namespace: company.team
+                id: shopify_create_product
+                namespace: company.team
 
-        tasks:
-          - id: create_product
-            type: io.kestra.plugin.shopify.products.CreateProduct
+                tasks:
+                  - id: create_product
+            type: io.kestra.plugin.shopify.products.Create
             storeDomain: my-store.myshopify.com
             accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
             title: "New T-Shirt"
@@ -52,12 +53,13 @@ import java.util.Map;
         )
     }
 )
-public class CreateProduct extends AbstractShopifyTask implements RunnableTask<CreateProduct.Output> {
+public class Create extends AbstractShopifyTask implements RunnableTask<Create.Output> {
 
     @Schema(
         title = "Product title",
-        description = "The title of the product"
+        description = "The title of the product (required)"
     )
+    @NotNull
     private Property<String> title;
 
     @Schema(
@@ -80,16 +82,16 @@ public class CreateProduct extends AbstractShopifyTask implements RunnableTask<C
 
     @Schema(
         title = "Tags",
-        description = "Comma-separated list of tags"
+        description = "List of tags for the product"
     )
-    private Property<String> tags;
+    private Property<List<String>> tags;
 
     @Schema(
         title = "Status",
-        description = "The status of the product (active, archived, draft)"
+        description = "The status of the product"
     )
     @Builder.Default
-    private Property<String> status = Property.of("draft");
+    private Property<ProductStatus> status = Property.ofValue(ProductStatus.DRAFT);
 
     @Schema(
         title = "Handle",

@@ -33,12 +33,12 @@ import java.util.Map;
         title = "Delete product by ID",
         full = true,
         code = """
-        id: shopify_delete_product
-        namespace: company.team
+                id: shopify_delete_product
+                namespace: company.team
 
-        tasks:
-          - id: delete_product
-            type: io.kestra.plugin.shopify.products.DeleteProduct
+                tasks:
+                  - id: delete_product
+            type: io.kestra.plugin.shopify.products.Delete
             storeDomain: my-store.myshopify.com
             accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
             productId: 123456789
@@ -46,7 +46,7 @@ import java.util.Map;
         )
     }
 )
-public class DeleteProduct extends AbstractShopifyTask implements RunnableTask<DeleteProduct.Output> {
+public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.Output> {
 
     @Schema(
         title = "Product ID",

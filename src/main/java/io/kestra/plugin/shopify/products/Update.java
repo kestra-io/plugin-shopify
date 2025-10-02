@@ -34,12 +34,12 @@ import java.util.Map;
         title = "Update product title and price",
         full = true,
         code = """
-        id: shopify_update_product
-        namespace: company.team
+                id: shopify_update_product
+                namespace: company.team
 
-        tasks:
-          - id: update_product
-            type: io.kestra.plugin.shopify.products.UpdateProduct
+                tasks:
+                  - id: update_product
+            type: io.kestra.plugin.shopify.products.Update
             storeDomain: my-store.myshopify.com
             accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
             productId: 123456789
@@ -50,7 +50,7 @@ import java.util.Map;
         )
     }
 )
-public class UpdateProduct extends AbstractShopifyTask implements RunnableTask<UpdateProduct.Output> {
+public class Update extends AbstractShopifyTask implements RunnableTask<Update.Output> {
 
     @Schema(
         title = "Product ID",

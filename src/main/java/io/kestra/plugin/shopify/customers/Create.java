@@ -72,17 +72,17 @@ import java.util.Map;
 
             code = """            full = true,
 
-                id: shopify_create_customer            code = """
+                        id: shopify_create_customer            code = """
 
-                namespace: company.team                id: shopify_create_customer
+                        namespace: company.team                        id: shopify_create_customer
 
-                                namespace: company.team
+                                        namespace: company.team
 
-                tasks:                
+                        tasks:                
 
-                  - id: create_customer                tasks:
+                          - id: create_customer                        tasks:
 
-                    type: io.kestra.plugin.shopify.customers.Create                  - id: create_customer
+                    type: io.kestra.plugin.shopify.customers.Create                          - id: create_customer
 
                     storeDomain: my-store.myshopify.com                    type: io.kestra.plugin.shopify.customers.Create
 

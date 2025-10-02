@@ -34,18 +34,18 @@ import java.util.Optional;
             title = "Trigger on new orders",
             full = true,
             code = """
-                id: shopify_order_trigger
-                namespace: company.team
+                        id: shopify_order_trigger
+                        namespace: company.team
 
                 triggers:
-                  - id: order_created
+                          - id: order_created
                     type: io.kestra.plugin.shopify.triggers.OrderCreated
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                     interval: PT5M
 
-                tasks:
-                  - id: process_order
+                        tasks:
+                          - id: process_order
                     type: io.kestra.core.tasks.log.Log
                     message: "New order created: {{ trigger.order.name }} for {{ trigger.order.totalPrice }}"
                 """
@@ -54,19 +54,19 @@ import java.util.Optional;
             title = "Trigger with order filtering",
             full = true,
             code = """
-                id: shopify_paid_order_trigger
-                namespace: company.team
+                        id: shopify_paid_order_trigger
+                        namespace: company.team
 
                 triggers:
-                  - id: paid_order_created
+                          - id: paid_order_created
                     type: io.kestra.plugin.shopify.triggers.OrderCreated
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                     interval: PT2M
                     financialStatus: paid
 
-                tasks:
-                  - id: fulfill_order
+                        tasks:
+                          - id: fulfill_order
                     type: io.kestra.core.tasks.log.Log
                     message: "Paid order ready for fulfillment: {{ trigger.order.name }}"
                 """
@@ -135,7 +135,7 @@ public class OrderCreated extends AbstractTrigger implements PollingTriggerInter
                 ZonedDateTime.now().minusMinutes(10); // Default to 10 minutes ago
 
             // Use Shopify API to get new orders since last check
-            io.kestra.plugin.shopify.orders.ListOrders listOrdersTask = io.kestra.plugin.shopify.orders.ListOrders.builder()
+            io.kestra.plugin.shopify.orders.List listOrdersTask = io.kestra.plugin.shopify.orders.List.builder()
                 .storeDomain(storeDomain)
                 .accessToken(accessToken)
                 .apiVersion(apiVersion)
@@ -145,7 +145,7 @@ public class OrderCreated extends AbstractTrigger implements PollingTriggerInter
                 .limit(maxOrders)
                 .build();
 
-            io.kestra.plugin.shopify.orders.ListOrders.Output result = listOrdersTask.run(runContext);
+            io.kestra.plugin.shopify.orders.List.Output result = listOrdersTask.run(runContext);
 
             if (result.getOrders().isEmpty()) {
                 logger.debug("No new orders found");

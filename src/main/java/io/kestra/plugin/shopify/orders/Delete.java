@@ -32,12 +32,12 @@ import java.net.URI;
         title = "Delete order by ID",
         full = true,
         code = """
-        id: shopify_delete_order
-        namespace: company.team
+                id: shopify_delete_order
+                namespace: company.team
 
-        tasks:
-          - id: delete_order
-            type: io.kestra.plugin.shopify.orders.DeleteOrder
+                tasks:
+                  - id: delete_order
+            type: io.kestra.plugin.shopify.orders.Delete
             storeDomain: my-store.myshopify.com
             accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
             orderId: 123456789
@@ -45,7 +45,7 @@ import java.net.URI;
         )
     }
 )
-public class DeleteOrder extends AbstractShopifyTask implements RunnableTask<DeleteOrder.Output> {
+public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.Output> {
 
     @Schema(
         title = "Order ID",

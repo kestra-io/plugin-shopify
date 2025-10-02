@@ -1,22 +1,22 @@
 package io.kestra.plugin.shopify.orders;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.io.IOException;
-import java.lang.InterruptedException;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Order;
+import io.kestra.plugin.shopify.models.FetchType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,218 +32,178 @@ import java.util.Map;
 @Plugin(
     examples = {
         @Example(
-        title = "List all orders",
-        full = true,
-        code = """
-        id: shopify_list_orders
-        namespace: company.team
-
-        tasks:
-          - id: list_orders
-            type: io.kestra.plugin.shopify.orders.ListOrders
-            storeDomain: my-store.myshopify.com
-            accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-        """
+            title = "List all orders",
+            full = true,
+            code = """
+                        id: shopify_list_orders
+                        namespace: company.team
+                
+                        tasks:
+                          - id: list_orders
+                    type: io.kestra.plugin.shopify.orders.List
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                """
         ),
         @Example(
-        title = "List orders with filtering",
-        full = true,
-        code = """
-        id: shopify_list_orders_filtered
-        namespace: company.team
-
-        tasks:
-          - id: list_orders
-            type: io.kestra.plugin.shopify.orders.ListOrders
-            storeDomain: my-store.myshopify.com
-            accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-            limit: 50
-            status: open
-            financialStatus: paid
-        """
+            title = "List orders with filtering",
+            full = true,
+            code = """
+                        id: shopify_list_orders_filtered
+                        namespace: company.team
+                
+                        tasks:
+                          - id: list_orders
+                    type: io.kestra.plugin.shopify.orders.List
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                    limit: 50
+                    status: "any"
+                    financialStatus: "paid"
+                """
         )
     }
 )
-public class ListOrders extends AbstractShopifyTask implements RunnableTask<ListOrders.Output> {
+public class List extends AbstractShopifyTask implements RunnableTask<List.Output> {
 
     @Schema(
-        title = "Number of orders to retrieve",
-        description = "Maximum number of orders to return (1-250, default: 50)"
+        title = "Fetch type",
+        description = "How to fetch the data (FETCH_ONE, FETCH, STORE)"
     )
     @Builder.Default
-    private Property<Integer> limit = Property.of(50);
+    private Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
 
     @Schema(
-        title = "Order status filter",
+        title = "Limit",
+        description = "Maximum number of orders to retrieve"
+    )
+    private Property<Integer> limit;
+
+    @Schema(
+        title = "Since ID",
+        description = "Retrieve orders after this ID"
+    )
+    private Property<Long> sinceId;
+
+    @Schema(
+        title = "Status filter",
         description = "Filter orders by status (open, closed, cancelled, any)"
     )
     private Property<String> status;
 
     @Schema(
-        title = "Financial status filter",
-        description = "Filter orders by financial status (authorized, pending, paid, partially_paid, refunded, voided, partially_refunded, any)"
+        title = "Financial status filter", 
+        description = "Filter orders by financial status"
     )
     private Property<String> financialStatus;
 
     @Schema(
         title = "Fulfillment status filter",
-        description = "Filter orders by fulfillment status (shipped, partial, unshipped, any)"
+        description = "Filter orders by fulfillment status"
     )
     private Property<String> fulfillmentStatus;
 
     @Schema(
-        title = "Created after date",
-        description = "Show orders created after this date (ISO 8601 format)"
+        title = "Created at min",
+        description = "Retrieve orders created after this date"
     )
     private Property<String> createdAtMin;
 
     @Schema(
-        title = "Created before date",
-        description = "Show orders created before this date (ISO 8601 format)"
+        title = "Created at max",
+        description = "Retrieve orders created before this date"
     )
     private Property<String> createdAtMax;
 
     @Schema(
-        title = "Updated after date",
-        description = "Show orders updated after this date (ISO 8601 format)"
+        title = "Updated at min",
+        description = "Retrieve orders updated after this date"
     )
     private Property<String> updatedAtMin;
 
     @Schema(
-        title = "Updated before date",
-        description = "Show orders updated before this date (ISO 8601 format)"
+        title = "Updated at max", 
+        description = "Retrieve orders updated before this date"
     )
     private Property<String> updatedAtMax;
 
-    @Schema(
-        title = "Processed after date",
-        description = "Show orders processed after this date (ISO 8601 format)"
-    )
-    private Property<String> processedAtMin;
-
-    @Schema(
-        title = "Processed before date",
-        description = "Show orders processed before this date (ISO 8601 format)"
-    )
-    private Property<String> processedAtMax;
-
-    @Schema(
-        title = "Customer ID filter",
-        description = "Filter orders by customer ID"
-    )
-    private Property<Long> customerId;
-
-    @Schema(
-        title = "Page info for pagination",
-        description = "Page info parameter for cursor-based pagination"
-    )
-    private Property<String> pageInfo;
-
-    @Schema(
-        title = "Fields to include",
-        description = "Comma-separated list of fields to include in the response"
-    )
-    private Property<String> fields;
-
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = buildHttpClient(runContext);
-        StringBuilder pathBuilder = new StringBuilder("/orders.json");
+        var client = runContext.http().client();
         
         // Build query parameters
-        StringBuilder queryParams = new StringBuilder();
+        List<String> queryParams = new ArrayList<>();
         
-        Integer limitValue = runContext.render(limit).as(Integer.class).orElse(50);
-        queryParams.append("?limit=").append(Math.min(Math.max(limitValue, 1), 250));
+        if (limit != null) {
+            Integer limitValue = runContext.render(limit).as(Integer.class).orElse(null);
+            if (limitValue != null) {
+                queryParams.add("limit=" + limitValue);
+            }
+        }
+        
+        if (sinceId != null) {
+            Long sinceIdValue = runContext.render(sinceId).as(Long.class).orElse(null);
+            if (sinceIdValue != null) {
+                queryParams.add("since_id=" + sinceIdValue);
+            }
+        }
         
         if (status != null) {
-        String statusValue = runContext.render(status).as(String.class).orElse(null);
-        if (statusValue != null) {
-            queryParams.append("&status=").append(statusValue);
-        }
+            String statusValue = runContext.render(status).as(String.class).orElse(null);
+            if (statusValue != null) {
+                queryParams.add("status=" + statusValue);
+            }
         }
         
         if (financialStatus != null) {
-        String financialStatusValue = runContext.render(financialStatus).as(String.class).orElse(null);
-        if (financialStatusValue != null) {
-            queryParams.append("&financial_status=").append(financialStatusValue);
-        }
+            String financialStatusValue = runContext.render(financialStatus).as(String.class).orElse(null);
+            if (financialStatusValue != null) {
+                queryParams.add("financial_status=" + financialStatusValue);
+            }
         }
         
         if (fulfillmentStatus != null) {
-        String fulfillmentStatusValue = runContext.render(fulfillmentStatus).as(String.class).orElse(null);
-        if (fulfillmentStatusValue != null) {
-            queryParams.append("&fulfillment_status=").append(fulfillmentStatusValue);
-        }
+            String fulfillmentStatusValue = runContext.render(fulfillmentStatus).as(String.class).orElse(null);
+            if (fulfillmentStatusValue != null) {
+                queryParams.add("fulfillment_status=" + fulfillmentStatusValue);
+            }
         }
         
         if (createdAtMin != null) {
-        String createdAtMinValue = runContext.render(createdAtMin).as(String.class).orElse(null);
-        if (createdAtMinValue != null) {
-            queryParams.append("&created_at_min=").append(createdAtMinValue);
-        }
+            String createdAtMinValue = runContext.render(createdAtMin).as(String.class).orElse(null);
+            if (createdAtMinValue != null) {
+                queryParams.add("created_at_min=" + createdAtMinValue);
+            }
         }
         
         if (createdAtMax != null) {
-        String createdAtMaxValue = runContext.render(createdAtMax).as(String.class).orElse(null);
-        if (createdAtMaxValue != null) {
-            queryParams.append("&created_at_max=").append(createdAtMaxValue);
-        }
+            String createdAtMaxValue = runContext.render(createdAtMax).as(String.class).orElse(null);
+            if (createdAtMaxValue != null) {
+                queryParams.add("created_at_max=" + createdAtMaxValue);
+            }
         }
         
         if (updatedAtMin != null) {
-        String updatedAtMinValue = runContext.render(updatedAtMin).as(String.class).orElse(null);
-        if (updatedAtMinValue != null) {
-            queryParams.append("&updated_at_min=").append(updatedAtMinValue);
-        }
+            String updatedAtMinValue = runContext.render(updatedAtMin).as(String.class).orElse(null);
+            if (updatedAtMinValue != null) {
+                queryParams.add("updated_at_min=" + updatedAtMinValue);
+            }
         }
         
         if (updatedAtMax != null) {
-        String updatedAtMaxValue = runContext.render(updatedAtMax).as(String.class).orElse(null);
-        if (updatedAtMaxValue != null) {
-            queryParams.append("&updated_at_max=").append(updatedAtMaxValue);
+            String updatedAtMaxValue = runContext.render(updatedAtMax).as(String.class).orElse(null);
+            if (updatedAtMaxValue != null) {
+                queryParams.add("updated_at_max=" + updatedAtMaxValue);
+            }
         }
-        }
-        
-        if (processedAtMin != null) {
-        String processedAtMinValue = runContext.render(processedAtMin).as(String.class).orElse(null);
-        if (processedAtMinValue != null) {
-            queryParams.append("&processed_at_min=").append(processedAtMinValue);
-        }
-        }
-        
-        if (processedAtMax != null) {
-        String processedAtMaxValue = runContext.render(processedAtMax).as(String.class).orElse(null);
-        if (processedAtMaxValue != null) {
-            queryParams.append("&processed_at_max=").append(processedAtMaxValue);
-        }
-        }
-        
-        if (customerId != null) {
-        Long customerIdValue = runContext.render(customerId).as(Long.class).orElse(null);
-        if (customerIdValue != null) {
-            queryParams.append("&customer_id=").append(customerIdValue);
-        }
-        }
-        
-        if (pageInfo != null) {
-        String pageInfoValue = runContext.render(pageInfo).as(String.class).orElse(null);
-        if (pageInfoValue != null) {
-            queryParams.append("&page_info=").append(pageInfoValue);
-        }
-        }
-        
-        if (fields != null) {
-        String fieldsValue = runContext.render(fields).as(String.class).orElse(null);
-        if (fieldsValue != null) {
-            queryParams.append("&fields=").append(fieldsValue);
-        }
-        }
-        
-        pathBuilder.append(queryParams.toString());
 
-        URI uri = buildApiUrl(runContext, pathBuilder.toString());
-        HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri);
+        String path = "/orders.json";
+        if (!queryParams.isEmpty()) {
+            path += "?" + String.join("&", queryParams);
+        }
+
+        URI uri = buildApiUrl(runContext, path);
+        HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
 
         runContext.logger().debug("Listing orders from Shopify API: {}", uri);
         
@@ -255,34 +215,27 @@ public class ListOrders extends AbstractShopifyTask implements RunnableTask<List
         List<Map<String, Object>> ordersData = (List<Map<String, Object>>) responseData.get("orders");
         
         if (ordersData == null) {
-        ordersData = List.of();
+            ordersData = new ArrayList<>();
         }
         
         List<Order> orders = ordersData.stream()
-        .map(orderData -> OBJECT_MAPPER.convertValue(orderData, Order.class))
-        .toList();
+            .map(orderData -> JacksonMapper.ofJson().convertValue(orderData, Order.class))
+            .toList();
 
         runContext.logger().info("Retrieved {} orders from Shopify", orders.size());
 
         return Output.builder()
-        .orders(orders)
-        .count(orders.size())
-        .build();
-        }
+            .orders(orders)
+            .build();
     }
 
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-        title = "List of orders",
-        description = "The retrieved orders from Shopify"
+            title = "Orders",
+            description = "List of orders retrieved from Shopify"
         )
         private final List<Order> orders;
-
-        @Schema(
-        title = "Number of orders",
-        description = "Total number of orders retrieved"
-        )
-        private final Integer count;
     }
+}

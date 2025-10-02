@@ -33,11 +33,11 @@ import java.util.Map;
             title = "Get customer by ID",
             full = true,
             code = """
-                id: shopify_get_customer
-                namespace: company.team
+                        id: shopify_get_customer
+                        namespace: company.team
                 
-                tasks:
-                  - id: get_customer
+                        tasks:
+                          - id: get_customer
                     type: io.kestra.plugin.shopify.customers.Get
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"

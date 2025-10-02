@@ -31,11 +31,11 @@ import java.net.http.HttpResponse;
             title = "Delete customer by ID",
             full = true,
             code = """
-                id: shopify_delete_customer
-                namespace: company.team
+                        id: shopify_delete_customer
+                        namespace: company.team
                 
-                tasks:
-                  - id: delete_customer
+                        tasks:
+                          - id: delete_customer
                     type: io.kestra.plugin.shopify.customers.Delete
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
