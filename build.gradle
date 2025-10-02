@@ -58,9 +58,7 @@ dependencies {
  * Test
  **********************************************************************************************************************/
 
-test {
-    useJUnitPlatform()
-}
+// Test configuration consolidated below
 
 dependencies {
     // Platform
@@ -112,6 +110,7 @@ dependencies {
 }
 
 test {
+    useJUnitPlatform()
     jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
     finalizedBy jacocoTestReport
 }
