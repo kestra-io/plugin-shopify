@@ -14,6 +14,7 @@ import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        var client = runContext.http().client();
+        HttpClient client = HttpClient.newHttpClient();
         
         Long customerIdValue = runContext.render(customerId).as(Long.class).orElseThrow();
         
@@ -66,7 +67,7 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
 
         runContext.logger().debug("Getting customer {} from Shopify API: {}", customerIdValue, uri);
         
-        handleRateLimit();
+        handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         Map<String, Object> responseData = parseResponse(response);
         

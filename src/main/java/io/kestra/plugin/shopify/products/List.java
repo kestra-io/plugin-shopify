@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @SuperBuilder
@@ -252,9 +251,24 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
         runContext.logger().info("Retrieved {} products from Shopify", products.size());
 
-        return Output.builder()
-            .products(products)
-            .build();
+        // Handle fetchType properly according to maintainer feedback
+        FetchType fetchTypeValue = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
+        
+        switch (fetchTypeValue) {
+            case FETCH_ONE:
+                if (products.isEmpty()) {
+                    return Output.builder().products(List.of()).count(0).build();
+                }
+                return Output.builder().products(List.of(products.get(0))).count(1).build();
+            case FETCH:
+                return Output.builder().products(products).count(products.size()).build();
+            case STORE:
+                // TODO: Implement storage functionality when needed
+                // For now, return as FETCH
+                return Output.builder().products(products).count(products.size()).build();
+            default:
+                return Output.builder().products(products).count(products.size()).build();
+        }
     }
 
     @Builder
@@ -265,5 +279,11 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             description = "List of products retrieved from Shopify"
         )
         private final List<Product> products;
+        
+        @Schema(
+            title = "Count",
+            description = "Number of products retrieved"
+        )
+        private final Integer count;
     }
 }

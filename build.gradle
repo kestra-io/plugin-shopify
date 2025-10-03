@@ -57,9 +57,6 @@ dependencies {
 /**********************************************************************************************************************\
  * Test
  **********************************************************************************************************************/
-
-// Test configuration consolidated below
-
 dependencies {
     // Platform
     testAnnotationProcessor enforcedPlatform("io.kestra:platform:$kestraVersion")
@@ -88,40 +85,14 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.hamcrest:hamcrest"
     testImplementation "org.hamcrest:hamcrest-library"
-}
-
-/**********************************************************************************************************************\
- * Allure Reports
- **********************************************************************************************************************/
-dependencies {
-    testImplementation enforcedPlatform("io.kestra:platform:$kestraVersion")
+    
+    // allure reports
     testImplementation "io.qameta.allure:allure-junit5"
 }
 
-configurations {
-    agent {
-        canBeResolved = true
-        canBeConsumed = true
-    }
-}
 
-dependencies {
-    agent "org.aspectj:aspectjweaver:1.9.24"
-}
 
-test {
-    useJUnitPlatform()
-    jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
-    finalizedBy jacocoTestReport
-}
 
-/**********************************************************************************************************************\
- * Jacoco
- **********************************************************************************************************************/
-
-jacocoTestReport {
-    dependsOn test
-}
 
 /**********************************************************************************************************************\
  * Publish

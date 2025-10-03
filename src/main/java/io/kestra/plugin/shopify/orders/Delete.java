@@ -85,7 +85,7 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
 
     @Builder
     @Getter
-    public static class Output implements io.kestra.core.models.tasks.Output {
+    static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
         title = "Deleted order ID",
         description = "The ID of the order that was deleted"

@@ -5,6 +5,7 @@ import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.JacksonMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,12 +44,14 @@ public abstract class AbstractShopifyTask extends Task {
         title = "API version",
         description = "Shopify Admin API version to use"
     )
+    @Builder.Default
     protected Property<String> apiVersion = Property.ofValue("2024-10");
 
     @Schema(
         title = "Rate limit delay",
         description = "Delay between API calls to respect rate limits"
     )
+    @Builder.Default
     protected Property<Duration> rateLimitDelay = Property.ofValue(Duration.ofMillis(500));
 
     protected URI buildApiUrl(RunContext runContext, String path) throws Exception {
@@ -79,8 +82,8 @@ public abstract class AbstractShopifyTask extends Task {
         return requestBuilder.build();
     }
 
-    protected void handleRateLimit() throws InterruptedException {
-        Duration delay = rateLimitDelay.getValue();
+    protected void handleRateLimit(RunContext runContext) throws Exception {
+        Duration delay = runContext.render(rateLimitDelay).as(Duration.class).orElse(Duration.ofMillis(500));
         if (delay != null && !delay.isNegative() && !delay.isZero()) {
             Thread.sleep(delay.toMillis());
         }

@@ -249,7 +249,6 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         return Output.builder()
         .product(updatedProduct)
         .build();
-        }
     }
 
     @Builder
@@ -261,3 +260,4 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         )
         private final Product product;
     }
+}
