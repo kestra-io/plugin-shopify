@@ -1,0 +1,66 @@
+id: shopify_product_management
+namespace: examples.shopify
+
+description: |
+  Complete product management workflow for Shopify:
+  1. List all products
+  2. Create a new product
+  3. Update the product
+  4. Get the updated product details
+  5. Archive the product (status = archived)
+
+variables:
+  store_domain: "{{ secret('SHOPIFY_STORE_DOMAIN') }}"
+  access_token: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+
+tasks:
+  - id: list_products
+    type: io.kestra.plugin.shopify.products.ListProducts
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    limit: 10
+    status: active
+
+  - id: create_product
+    type: io.kestra.plugin.shopify.products.CreateProduct
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    title: "Kestra Demo T-Shirt"
+    bodyHtml: "<p>A comfortable cotton t-shirt created via Kestra workflow automation</p>"
+    vendor: "Kestra Demo Store"
+    productType: "Clothing"
+    tags: "demo,kestra,automation,t-shirt"
+    status: "active"
+    seoTitle: "Kestra Demo T-Shirt - Comfortable Cotton"
+    seoDescription: "High-quality cotton t-shirt demonstrating Kestra workflow automation"
+
+  - id: update_product
+    type: io.kestra.plugin.shopify.products.UpdateProduct
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    productId: "{{ outputs.create_product.product.id }}"
+    title: "Kestra Demo T-Shirt - Updated"
+    bodyHtml: "<p>An updated comfortable cotton t-shirt created via Kestra workflow automation</p>"
+    tags: "demo,kestra,automation,t-shirt,updated"
+
+  - id: get_updated_product
+    type: io.kestra.plugin.shopify.products.GetProduct
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    productId: "{{ outputs.create_product.product.id }}"
+
+  - id: archive_product
+    type: io.kestra.plugin.shopify.products.UpdateProduct
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    productId: "{{ outputs.create_product.product.id }}"
+    status: "archived"
+
+  - id: log_results
+    type: io.kestra.core.tasks.log.Log
+    message: |
+      Product workflow completed:
+      - Listed {{ outputs.list_products.count }} products
+      - Created product: {{ outputs.create_product.product.title }} (ID: {{ outputs.create_product.product.id }})
+      - Updated product title to: {{ outputs.update_product.product.title }}
+      - Final product status: {{ outputs.archive_product.product.status }}

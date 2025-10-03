@@ -1,0 +1,65 @@
+id: shopify_order_trigger_demo
+namespace: examples.shopify
+
+description: |
+  Demonstrates the Shopify order trigger that automatically processes new orders
+
+triggers:
+  - id: new_order_trigger
+    type: io.kestra.plugin.shopify.triggers.OrderCreated
+    storeDomain: "{{ secret('SHOPIFY_STORE_DOMAIN') }}"
+    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+    interval: PT2M  # Check every 2 minutes
+    financialStatus: paid  # Only process paid orders
+    maxOrders: 5
+
+variables:
+  store_domain: "{{ secret('SHOPIFY_STORE_DOMAIN') }}"
+  access_token: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+
+tasks:
+  - id: process_new_orders
+    type: io.kestra.core.tasks.flows.ForEach
+    value: "{{ trigger.orders }}"
+    tasks:
+      - id: log_order_details
+        type: io.kestra.core.tasks.log.Log
+        message: |
+          Processing new order:
+          - Order Number: {{ taskrun.value.name }}
+          - Order ID: {{ taskrun.value.id }}
+          - Customer Email: {{ taskrun.value.email }}
+          - Total Amount: {{ taskrun.value.totalPrice }} {{ taskrun.value.currency }}
+          - Financial Status: {{ taskrun.value.financialStatus }}
+          - Fulfillment Status: {{ taskrun.value.fulfillmentStatus }}
+          - Created At: {{ taskrun.value.createdAt }}
+          - Line Items: {{ taskrun.value.lineItems | length }}
+
+      - id: get_order_details
+        type: io.kestra.plugin.shopify.orders.GetOrder
+        storeDomain: "{{ vars.store_domain }}"
+        accessToken: "{{ vars.access_token }}"
+        orderId: "{{ taskrun.value.id }}"
+
+      - id: process_order_items
+        type: io.kestra.core.tasks.flows.ForEach
+        value: "{{ outputs.get_order_details.order.lineItems }}"
+        tasks:
+          - id: log_line_item
+            type: io.kestra.core.tasks.log.Log
+            message: |
+              Line Item:
+              - Product: {{ taskrun.value.title }}
+              - SKU: {{ taskrun.value.sku }}
+              - Quantity: {{ taskrun.value.quantity }}
+              - Price: {{ taskrun.value.price }}
+              - Product ID: {{ taskrun.value.productId }}
+              - Variant ID: {{ taskrun.value.variantId }}
+
+  - id: send_notification
+    type: io.kestra.core.tasks.log.Log
+    message: |
+      Order Processing Summary:
+      - Total new orders processed: {{ trigger.count }}
+      - Processing timestamp: {{ now() }}
+      - Trigger state updated with latest order time
