@@ -59,7 +59,7 @@ public class ListCustomers extends AbstractShopifyTask implements RunnableTask<L
     )
     @Builder.Default
     @NotNull
-    protected Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
+    protected Property<FetchType> fetchType = Property.of(FetchType.FETCH);
     
     @Schema(
         title = "Customer limit",

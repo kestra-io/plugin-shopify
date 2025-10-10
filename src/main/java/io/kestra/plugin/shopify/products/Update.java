@@ -10,6 +10,7 @@ import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -126,7 +127,7 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = buildHttpClient(runContext);
+        HttpClient client = HttpClient.newHttpClient();
         Long productIdValue = runContext.render(productId).as(Long.class)
         .orElseThrow(() -> new IllegalArgumentException("Product ID is required"));
 
@@ -230,7 +231,7 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
 
         runContext.logger().debug("Updating product {} in Shopify API: {}", productIdValue, uri);
         
-        handleRateLimit();
+        handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         Map<String, Object> responseData = parseResponse(response);
         
@@ -241,7 +242,7 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         throw new RuntimeException("Failed to update product - no product data returned");
         }
         
-        Product updatedProduct = OBJECT_MAPPER.convertValue(updatedProductData, Product.class);
+        Product updatedProduct = JacksonMapper.ofJson().convertValue(updatedProductData, Product.class);
 
         runContext.logger().info("Updated product '{}' (ID: {}) in Shopify", 
         updatedProduct.getTitle(), updatedProduct.getId());

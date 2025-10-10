@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 
 @SuperBuilder
@@ -51,20 +52,21 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
         title = "Order ID",
         description = "The ID of the order to delete"
     )
+    @NotNull
     private Property<Long> orderId;
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = buildHttpClient(runContext);
+        HttpClient client = HttpClient.newHttpClient();
         Long orderIdValue = runContext.render(orderId).as(Long.class)
         .orElseThrow(() -> new IllegalArgumentException("Order ID is required"));
 
         URI uri = buildApiUrl(runContext, "/orders/" + orderIdValue + ".json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri);
+        HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
         runContext.logger().debug("Deleting order {} from Shopify API: {}", orderIdValue, uri);
         
-        handleRateLimit();
+        handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         
         // For DELETE requests, Shopify returns 200 with empty body on success
@@ -85,7 +87,7 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
 
     @Builder
     @Getter
-    static class Output implements io.kestra.core.models.tasks.Output {
+    public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
         title = "Deleted order ID",
         description = "The ID of the order that was deleted"

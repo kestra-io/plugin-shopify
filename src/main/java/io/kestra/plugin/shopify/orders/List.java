@@ -14,10 +14,13 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @SuperBuilder
 @ToString
@@ -70,7 +73,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         description = "How to fetch the data (FETCH_ONE, FETCH, STORE)"
     )
     @Builder.Default
-    private Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
+    private Property<FetchType> fetchType = Property.of(FetchType.FETCH);
 
     @Schema(
         title = "Limit",
@@ -128,10 +131,10 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        var client = runContext.http().client();
+        HttpClient client = HttpClient.newHttpClient();
         
         // Build query parameters
-        List<String> queryParams = new ArrayList<>();
+        java.util.List<String> queryParams = new ArrayList<>();
         
         if (limit != null) {
             Integer limitValue = runContext.render(limit).as(Integer.class).orElse(null);
@@ -206,18 +209,18 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
         runContext.logger().debug("Listing orders from Shopify API: {}", uri);
         
-        handleRateLimit();
+        handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         Map<String, Object> responseData = parseResponse(response);
         
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> ordersData = (List<Map<String, Object>>) responseData.get("orders");
+        java.util.List<Map<String, Object>> ordersData = (java.util.List<Map<String, Object>>) responseData.get("orders");
         
         if (ordersData == null) {
             ordersData = new ArrayList<>();
         }
         
-        List<Order> orders = ordersData.stream()
+        java.util.List<Order> orders = ordersData.stream()
             .map(orderData -> JacksonMapper.ofJson().convertValue(orderData, Order.class))
             .toList();
 
@@ -229,9 +232,9 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         switch (fetchTypeValue) {
             case FETCH_ONE:
                 if (orders.isEmpty()) {
-                    return Output.builder().orders(List.of()).count(0).build();
+                    return Output.builder().orders(java.util.Collections.emptyList()).count(0).build();
                 }
-                return Output.builder().orders(List.of(orders.get(0))).count(1).build();
+                return Output.builder().orders(java.util.List.of(orders.get(0))).count(1).build();
             case FETCH:
                 return Output.builder().orders(orders).count(orders.size()).build();
             case STORE:
@@ -250,7 +253,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             title = "Orders",
             description = "List of orders retrieved from Shopify"
         )
-        private final List<Order> orders;
+        private final java.util.List<Order> orders;
         
         @Schema(
             title = "Count",

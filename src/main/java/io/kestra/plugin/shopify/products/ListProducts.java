@@ -16,7 +16,6 @@ import lombok.experimental.SuperBuilder;
 import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -39,15 +38,15 @@ import java.util.stream.Collectors;
             title = "List all products",
             full = true,
             code = """
-                id: shopify_list_products
-                namespace: company.team
-                
-                tasks:
-                  - id: list_products
-                    type: io.kestra.plugin.shopify.products.ListProducts
-                    storeDomain: my-store.myshopify.com
-                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-                """
+id: shopify_list_products
+namespace: company.team
+
+tasks:
+  - id: list_products
+    type: io.kestra.plugin.shopify.products.ListProducts
+    storeDomain: my-store.myshopify.com
+    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+"""
         )
     }
 )
@@ -59,7 +58,7 @@ public class ListProducts extends AbstractShopifyTask implements RunnableTask<Li
     )
     @Builder.Default
     @NotNull
-    protected Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
+    protected Property<FetchType> fetchType = Property.of(FetchType.FETCH);
     
     @Schema(
         title = "Product limit",
@@ -69,7 +68,7 @@ public class ListProducts extends AbstractShopifyTask implements RunnableTask<Li
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
         
         java.util.List<String> queryParams = new ArrayList<>();
         
@@ -86,12 +85,12 @@ public class ListProducts extends AbstractShopifyTask implements RunnableTask<Li
         }
 
         URI uri = buildApiUrl(runContext, path);
-        HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
+        java.net.http.HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
 
         runContext.logger().debug("Listing products from Shopify API: {}", uri);
         
         handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
         Map<String, Object> responseData = parseResponse(response);
         
         @SuppressWarnings("unchecked")
@@ -101,9 +100,11 @@ public class ListProducts extends AbstractShopifyTask implements RunnableTask<Li
             .map(productData -> JacksonMapper.ofJson().convertValue(productData, Product.class))
             .collect(Collectors.toList());
             
-        FetchType fetchTypeValue = Property.as(fetchType, runContext, FetchType.class);
+        FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
         
-        switch (fetchTypeValue) {
+        runContext.logger().info("Retrieved {} products from Shopify", products.size());
+        
+        switch (rFetchType) {
             case FETCH_ONE:
                 if (products.isEmpty()) {
                     return Output.builder().products(java.util.List.of()).count(0).build();

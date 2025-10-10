@@ -1,5 +1,8 @@
 package io.kestra.plugin.shopify;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
@@ -14,8 +17,6 @@ import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 
@@ -45,14 +46,14 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Shopify Admin API version to use"
     )
     @Builder.Default
-    protected Property<String> apiVersion = Property.ofValue("2024-10");
+    protected Property<String> apiVersion = Property.of("2024-10");
 
     @Schema(
         title = "Rate limit delay",
         description = "Delay between API calls to respect rate limits"
     )
     @Builder.Default
-    protected Property<Duration> rateLimitDelay = Property.ofValue(Duration.ofMillis(500));
+    protected Property<Duration> rateLimitDelay = Property.of(Duration.ofMillis(500));
 
     protected URI buildApiUrl(RunContext runContext, String path) throws Exception {
         String domain = runContext.render(storeDomain).as(String.class).orElseThrow(() -> 
