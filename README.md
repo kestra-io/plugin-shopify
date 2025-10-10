@@ -16,6 +16,14 @@ A comprehensive plugin for integrating with Shopify Admin API, enabling complete
 - **Get** - Fetch a specific order by ID
 - **Create** - Create new orders programmatically
 - **Delete** - Cancel or remove orders
+<p align="center">
+  <a href="https://twitter.com/kestra_io" style="margin: 0 10px;">
+        <img src="https://kestra.io/twitter.svg" alt="twitter" width="35" height="25" /></a>
+  <a href="https://www.linkedin.com/company/kestra/" style="margin: 0 10px;">
+        <img src="https://kestra.io/linkedin.svg" alt="linkedin" width="35" height="25" /></a>
+  <a href="https://www.youtube.com/@kestra-io" style="margin: 0 10px;">
+        <img src="https://kestra.io/youtube.svg" alt="youtube" width="35" height="25" /></a>
+</p>
 
 ### 👥 Customers
 - **List** - Retrieve customers with filtering and pagination
@@ -53,6 +61,8 @@ tasks:
     limit: 10
     status: ACTIVE
 ```
+
+![Kestra orchestrator](https://kestra.io/video.gif)
 
 ## Documentation
 
