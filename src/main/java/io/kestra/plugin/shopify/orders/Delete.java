@@ -82,7 +82,6 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
         .orderId(orderIdValue)
         .deleted(true)
         .build();
-        }
     }
 
     @Builder
@@ -100,3 +99,4 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
         )
         private final Boolean deleted;
     }
+}

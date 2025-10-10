@@ -238,9 +238,17 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             case FETCH:
                 return Output.builder().orders(orders).count(orders.size()).build();
             case STORE:
-                // TODO: Implement storage functionality when needed
-                // For now, return as FETCH
-                return Output.builder().orders(orders).count(orders.size()).build();
+                java.util.List<String> uris = new ArrayList<>();
+                for (Order order : orders) {
+                    URI storedUri = runContext.storage().putFile(
+                        new java.io.ByteArrayInputStream(
+                            JacksonMapper.ofJson().writeValueAsString(order).getBytes(java.nio.charset.StandardCharsets.UTF_8)
+                        ),
+                        "order_" + order.getId() + ".json"
+                    );
+                    uris.add(storedUri.toString());
+                }
+                return Output.builder().orders(orders).count(orders.size()).uris(uris).build();
             default:
                 return Output.builder().orders(orders).count(orders.size()).build();
         }
@@ -260,5 +268,11 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             description = "Number of orders retrieved"
         )
         private final Integer count;
+        
+        @Schema(
+            title = "URIs",
+            description = "URIs of stored order files when fetchType is STORE"
+        )
+        private final java.util.List<String> uris;
     }
 }
