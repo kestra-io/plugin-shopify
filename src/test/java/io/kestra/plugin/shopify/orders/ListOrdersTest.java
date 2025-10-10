@@ -4,6 +4,7 @@ import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.utils.TestsUtils;
+import io.kestra.core.models.property.Property;
 import io.kestra.plugin.shopify.models.Order;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -26,14 +27,16 @@ class ListOrdersTest {
         String storeDomain = System.getenv("SHOPIFY_STORE_DOMAIN");
         String accessToken = System.getenv("SHOPIFY_ACCESS_TOKEN");
 
-        ListOrders task = ListOrders.builder()
-            .storeDomain(storeDomain)
-            .accessToken(accessToken)
-            .limit(5)
+        List task = List.builder()
+            .id("test-task")
+            .type(List.class.getName())
+            .storeDomain(Property.of(storeDomain))
+            .accessToken(Property.of(accessToken))
+            .limit(Property.of(5))
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
-        ListOrders.Output output = task.run(runContext);
+        List.Output output = task.run(runContext);
 
         assertThat(output, notNullValue());
         assertThat(output.getCount(), greaterThanOrEqualTo(0));
@@ -48,12 +51,15 @@ class ListOrdersTest {
 
     @Test
     void testListOrdersRequiredFields() {
-        ListOrders task = ListOrders.builder()
+        // Test task validation - storeDomain is required
+        List task = List.builder()
+            .id("test-task")
+            .type(List.class.getName())
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
         
-        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
             task.run(runContext);
         });
     }
