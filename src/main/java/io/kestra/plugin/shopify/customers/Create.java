@@ -39,7 +39,7 @@ import java.util.Map;
                 
                 tasks:
                   - id: create_customer
-                    type: io.kestra.plugin.shopify.customers.CreateCustomer
+                    type: io.kestra.plugin.shopify.customers.Create
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                     email: customer@example.com
@@ -49,7 +49,7 @@ import java.util.Map;
         )
     }
 )
-public class CreateCustomer extends AbstractShopifyTask implements RunnableTask<CreateCustomer.Output> {
+public class Create extends AbstractShopifyTask implements RunnableTask<Create.Output> {
     
     @Schema(
         title = "Customer email",

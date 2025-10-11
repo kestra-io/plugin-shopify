@@ -94,9 +94,34 @@ test {
     useJUnitPlatform()
 }
 
+/**********************************************************************************************************************\
+ * Jacoco
+ **********************************************************************************************************************/
+jacoco {
+    toolVersion = "0.8.11"
+}
 
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        csv.required = true
+        html.required = true
+    }
+}
 
+test.finalizedBy jacocoTestReport
+check.dependsOn jacocoTestCoverageVerification
 
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.01
+            }
+        }
+    }
+}
 
 /**********************************************************************************************************************\
  * Publish
