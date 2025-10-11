@@ -128,72 +128,72 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
     @Override
     public Output run(RunContext runContext) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
-        Long productIdValue = runContext.render(productId).as(Long.class)
+        Long rProductId = runContext.render(productId).as(Long.class)
         .orElseThrow(() -> new IllegalArgumentException("Product ID is required"));
 
         // Build product update object - only include fields that are provided
         Map<String, Object> productData = new java.util.HashMap<>();
 
         if (title != null) {
-        String titleValue = runContext.render(title).as(String.class).orElse(null);
-        if (titleValue != null) {
-            productData.put("title", titleValue);
+        String rTitle = runContext.render(title).as(String.class).orElse(null);
+        if (rTitle != null) {
+            productData.put("title", rTitle);
         }
         }
 
         if (bodyHtml != null) {
-        String bodyHtmlValue = runContext.render(bodyHtml).as(String.class).orElse(null);
-        if (bodyHtmlValue != null) {
-            productData.put("body_html", bodyHtmlValue);
+        String rBodyHtml = runContext.render(bodyHtml).as(String.class).orElse(null);
+        if (rBodyHtml != null) {
+            productData.put("body_html", rBodyHtml);
         }
         }
 
         if (vendor != null) {
-        String vendorValue = runContext.render(vendor).as(String.class).orElse(null);
-        if (vendorValue != null) {
-            productData.put("vendor", vendorValue);
+        String rVendor = runContext.render(vendor).as(String.class).orElse(null);
+        if (rVendor != null) {
+            productData.put("vendor", rVendor);
         }
         }
 
         if (productType != null) {
-        String productTypeValue = runContext.render(productType).as(String.class).orElse(null);
-        if (productTypeValue != null) {
-            productData.put("product_type", productTypeValue);
+        String rProductType = runContext.render(productType).as(String.class).orElse(null);
+        if (rProductType != null) {
+            productData.put("product_type", rProductType);
         }
         }
 
         if (tags != null) {
-        String tagsValue = runContext.render(tags).as(String.class).orElse(null);
-        if (tagsValue != null) {
-            productData.put("tags", tagsValue);
+        String rTags = runContext.render(tags).as(String.class).orElse(null);
+        if (rTags != null) {
+            productData.put("tags", rTags);
         }
         }
 
         if (status != null) {
-        String statusValue = runContext.render(status).as(String.class).orElse(null);
-        if (statusValue != null) {
-            productData.put("status", statusValue);
+        String rStatus = runContext.render(status).as(String.class).orElse(null);
+        if (rStatus != null) {
+            productData.put("status", rStatus);
         }
         }
 
         if (handle != null) {
-        String handleValue = runContext.render(handle).as(String.class).orElse(null);
-        if (handleValue != null) {
-            productData.put("handle", handleValue);
+        String rHandle = runContext.render(handle).as(String.class).orElse(null);
+        if (rHandle != null) {
+            productData.put("handle", rHandle);
         }
         }
 
         if (templateSuffix != null) {
-        String templateSuffixValue = runContext.render(templateSuffix).as(String.class).orElse(null);
-        if (templateSuffixValue != null) {
-            productData.put("template_suffix", templateSuffixValue);
+        String rTemplateSuffix = runContext.render(templateSuffix).as(String.class).orElse(null);
+        if (rTemplateSuffix != null) {
+            productData.put("template_suffix", rTemplateSuffix);
         }
         }
 
         if (publishedScope != null) {
-        String publishedScopeValue = runContext.render(publishedScope).as(String.class).orElse(null);
-        if (publishedScopeValue != null) {
-            productData.put("published_scope", publishedScopeValue);
+        String rPublishedScope = runContext.render(publishedScope).as(String.class).orElse(null);
+        if (rPublishedScope != null) {
+            productData.put("published_scope", rPublishedScope);
         }
         }
 
@@ -201,15 +201,15 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         if (seoTitle != null || seoDescription != null) {
         Map<String, Object> seoData = new java.util.HashMap<>();
         if (seoTitle != null) {
-            String seoTitleValue = runContext.render(seoTitle).as(String.class).orElse(null);
-            if (seoTitleValue != null) {
-                seoData.put("title", seoTitleValue);
+            String rSeoTitle = runContext.render(seoTitle).as(String.class).orElse(null);
+            if (rSeoTitle != null) {
+                seoData.put("title", rSeoTitle);
             }
         }
         if (seoDescription != null) {
-            String seoDescriptionValue = runContext.render(seoDescription).as(String.class).orElse(null);
-            if (seoDescriptionValue != null) {
-                seoData.put("description", seoDescriptionValue);
+            String rSeoDescription = runContext.render(seoDescription).as(String.class).orElse(null);
+            if (rSeoDescription != null) {
+                seoData.put("description", rSeoDescription);
             }
         }
         if (!seoData.isEmpty()) {
@@ -222,14 +222,14 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         }
 
         // Add the product ID to ensure we're updating the right product
-        productData.put("id", productIdValue);
+        productData.put("id", rProductId);
 
         Map<String, Object> requestBody = Map.of("product", productData);
 
-        URI uri = buildApiUrl(runContext, "/products/" + productIdValue + ".json");
+        URI uri = buildApiUrl(runContext, "/products/" + rProductId + ".json");
         HttpRequest request = buildAuthenticatedRequest(runContext, "PUT", uri, requestBody);
 
-        runContext.logger().debug("Updating product {} in Shopify API: {}", productIdValue, uri);
+        runContext.logger().debug("Updating product {} in Shopify API: {}", rProductId, uri);
         
         handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

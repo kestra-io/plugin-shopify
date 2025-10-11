@@ -137,65 +137,65 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         java.util.List<String> queryParams = new ArrayList<>();
         
         if (limit != null) {
-            Integer limitValue = runContext.render(limit).as(Integer.class).orElse(null);
-            if (limitValue != null) {
-                queryParams.add("limit=" + limitValue);
+            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
+            if (rLimit != null) {
+                queryParams.add("limit=" + rLimit);
             }
         }
         
         if (sinceId != null) {
-            Long sinceIdValue = runContext.render(sinceId).as(Long.class).orElse(null);
-            if (sinceIdValue != null) {
-                queryParams.add("since_id=" + sinceIdValue);
+            Long rSinceId = runContext.render(sinceId).as(Long.class).orElse(null);
+            if (rSinceId != null) {
+                queryParams.add("since_id=" + rSinceId);
             }
         }
         
         if (status != null) {
-            String statusValue = runContext.render(status).as(String.class).orElse(null);
-            if (statusValue != null) {
-                queryParams.add("status=" + statusValue);
+            String rStatus = runContext.render(status).as(String.class).orElse(null);
+            if (rStatus != null) {
+                queryParams.add("status=" + rStatus);
             }
         }
         
         if (financialStatus != null) {
-            String financialStatusValue = runContext.render(financialStatus).as(String.class).orElse(null);
-            if (financialStatusValue != null) {
-                queryParams.add("financial_status=" + financialStatusValue);
+            String rFinancialStatus = runContext.render(financialStatus).as(String.class).orElse(null);
+            if (rFinancialStatus != null) {
+                queryParams.add("financial_status=" + rFinancialStatus);
             }
         }
         
         if (fulfillmentStatus != null) {
-            String fulfillmentStatusValue = runContext.render(fulfillmentStatus).as(String.class).orElse(null);
-            if (fulfillmentStatusValue != null) {
-                queryParams.add("fulfillment_status=" + fulfillmentStatusValue);
+            String rFulfillmentStatus = runContext.render(fulfillmentStatus).as(String.class).orElse(null);
+            if (rFulfillmentStatus != null) {
+                queryParams.add("fulfillment_status=" + rFulfillmentStatus);
             }
         }
         
         if (createdAtMin != null) {
-            String createdAtMinValue = runContext.render(createdAtMin).as(String.class).orElse(null);
-            if (createdAtMinValue != null) {
-                queryParams.add("created_at_min=" + createdAtMinValue);
+            String rCreatedAtMin = runContext.render(createdAtMin).as(String.class).orElse(null);
+            if (rCreatedAtMin != null) {
+                queryParams.add("created_at_min=" + rCreatedAtMin);
             }
         }
         
         if (createdAtMax != null) {
-            String createdAtMaxValue = runContext.render(createdAtMax).as(String.class).orElse(null);
-            if (createdAtMaxValue != null) {
-                queryParams.add("created_at_max=" + createdAtMaxValue);
+            String rCreatedAtMax = runContext.render(createdAtMax).as(String.class).orElse(null);
+            if (rCreatedAtMax != null) {
+                queryParams.add("created_at_max=" + rCreatedAtMax);
             }
         }
         
         if (updatedAtMin != null) {
-            String updatedAtMinValue = runContext.render(updatedAtMin).as(String.class).orElse(null);
-            if (updatedAtMinValue != null) {
-                queryParams.add("updated_at_min=" + updatedAtMinValue);
+            String rUpdatedAtMin = runContext.render(updatedAtMin).as(String.class).orElse(null);
+            if (rUpdatedAtMin != null) {
+                queryParams.add("updated_at_min=" + rUpdatedAtMin);
             }
         }
         
         if (updatedAtMax != null) {
-            String updatedAtMaxValue = runContext.render(updatedAtMax).as(String.class).orElse(null);
-            if (updatedAtMaxValue != null) {
-                queryParams.add("updated_at_max=" + updatedAtMaxValue);
+            String rUpdatedAtMax = runContext.render(updatedAtMax).as(String.class).orElse(null);
+            if (rUpdatedAtMax != null) {
+                queryParams.add("updated_at_max=" + rUpdatedAtMax);
             }
         }
 
@@ -227,9 +227,9 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         runContext.logger().info("Retrieved {} orders from Shopify", orders.size());
 
         // Handle fetchType properly according to maintainer feedback
-        FetchType fetchTypeValue = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
+        FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
         
-        switch (fetchTypeValue) {
+        switch (rFetchType) {
             case FETCH_ONE:
                 if (orders.isEmpty()) {
                     return Output.builder().orders(java.util.Collections.emptyList()).count(0).build();

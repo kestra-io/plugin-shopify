@@ -151,79 +151,79 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         java.util.List<String> queryParams = new ArrayList<>();
         
         if (limit != null) {
-            Integer limitValue = runContext.render(limit).as(Integer.class).orElse(null);
-            if (limitValue != null) {
-                queryParams.add("limit=" + limitValue);
+            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
+            if (rLimit != null) {
+                queryParams.add("limit=" + rLimit);
             }
         }
         
         if (sinceId != null) {
-            Long sinceIdValue = runContext.render(sinceId).as(Long.class).orElse(null);
-            if (sinceIdValue != null) {
-                queryParams.add("since_id=" + sinceIdValue);
+            Long rSinceId = runContext.render(sinceId).as(Long.class).orElse(null);
+            if (rSinceId != null) {
+                queryParams.add("since_id=" + rSinceId);
             }
         }
         
         if (status != null) {
-            ProductStatus statusValue = runContext.render(status).as(ProductStatus.class).orElse(null);
-            if (statusValue != null) {
-                queryParams.add("status=" + statusValue.name().toLowerCase());
+            ProductStatus rStatus = runContext.render(status).as(ProductStatus.class).orElse(null);
+            if (rStatus != null) {
+                queryParams.add("status=" + rStatus.name().toLowerCase());
             }
         }
         
         if (publishedStatus != null) {
-            PublishedStatus publishedValue = runContext.render(publishedStatus).as(PublishedStatus.class).orElse(null);
-            if (publishedValue != null) {
-                queryParams.add("published_status=" + publishedValue.name().toLowerCase());
+            PublishedStatus rPublished = runContext.render(publishedStatus).as(PublishedStatus.class).orElse(null);
+            if (rPublished != null) {
+                queryParams.add("published_status=" + rPublished.name().toLowerCase());
             }
         }
         
         if (productType != null) {
-            String productTypeValue = runContext.render(productType).as(String.class).orElse(null);
-            if (productTypeValue != null) {
-                queryParams.add("product_type=" + productTypeValue);
+            String rProductType = runContext.render(productType).as(String.class).orElse(null);
+            if (rProductType != null) {
+                queryParams.add("product_type=" + rProductType);
             }
         }
         
         if (vendor != null) {
-            String vendorValue = runContext.render(vendor).as(String.class).orElse(null);
-            if (vendorValue != null) {
-                queryParams.add("vendor=" + vendorValue);
+            String rVendor = runContext.render(vendor).as(String.class).orElse(null);
+            if (rVendor != null) {
+                queryParams.add("vendor=" + rVendor);
             }
         }
         
         if (handle != null) {
-            String handleValue = runContext.render(handle).as(String.class).orElse(null);
-            if (handleValue != null) {
-                queryParams.add("handle=" + handleValue);
+            String rHandle = runContext.render(handle).as(String.class).orElse(null);
+            if (rHandle != null) {
+                queryParams.add("handle=" + rHandle);
             }
         }
         
         if (createdAtMin != null) {
-            String createdAtMinValue = runContext.render(createdAtMin).as(String.class).orElse(null);
-            if (createdAtMinValue != null) {
-                queryParams.add("created_at_min=" + createdAtMinValue);
+            String rCreatedAtMin = runContext.render(createdAtMin).as(String.class).orElse(null);
+            if (rCreatedAtMin != null) {
+                queryParams.add("created_at_min=" + rCreatedAtMin);
             }
         }
         
         if (createdAtMax != null) {
-            String createdAtMaxValue = runContext.render(createdAtMax).as(String.class).orElse(null);
-            if (createdAtMaxValue != null) {
-                queryParams.add("created_at_max=" + createdAtMaxValue);
+            String rCreatedAtMax = runContext.render(createdAtMax).as(String.class).orElse(null);
+            if (rCreatedAtMax != null) {
+                queryParams.add("created_at_max=" + rCreatedAtMax);
             }
         }
         
         if (updatedAtMin != null) {
-            String updatedAtMinValue = runContext.render(updatedAtMin).as(String.class).orElse(null);
-            if (updatedAtMinValue != null) {
-                queryParams.add("updated_at_min=" + updatedAtMinValue);
+            String rUpdatedAtMin = runContext.render(updatedAtMin).as(String.class).orElse(null);
+            if (rUpdatedAtMin != null) {
+                queryParams.add("updated_at_min=" + rUpdatedAtMin);
             }
         }
         
         if (updatedAtMax != null) {
-            String updatedAtMaxValue = runContext.render(updatedAtMax).as(String.class).orElse(null);
-            if (updatedAtMaxValue != null) {
-                queryParams.add("updated_at_max=" + updatedAtMaxValue);
+            String rUpdatedAtMax = runContext.render(updatedAtMax).as(String.class).orElse(null);
+            if (rUpdatedAtMax != null) {
+                queryParams.add("updated_at_max=" + rUpdatedAtMax);
             }
         }
 
@@ -255,9 +255,9 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         runContext.logger().info("Retrieved {} products from Shopify", products.size());
 
         // Handle fetchType properly according to maintainer feedback
-        FetchType fetchTypeValue = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
+        FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
         
-        switch (fetchTypeValue) {
+        switch (rFetchType) {
             case FETCH_ONE:
                 if (products.isEmpty()) {
                     return Output.builder().products(java.util.Collections.emptyList()).count(0).build();

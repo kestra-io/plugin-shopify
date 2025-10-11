@@ -73,9 +73,9 @@ public class ListProducts extends AbstractShopifyTask implements RunnableTask<Li
         java.util.List<String> queryParams = new ArrayList<>();
         
         if (limit != null) {
-            Integer limitValue = runContext.render(limit).as(Integer.class).orElse(null);
-            if (limitValue != null) {
-                queryParams.add("limit=" + limitValue);
+            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
+            if (rLimit != null) {
+                queryParams.add("limit=" + rLimit);
             }
         }
         

@@ -58,22 +58,22 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<VoidOutp
     public VoidOutput run(RunContext runContext) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         
-        Long customerIdValue = runContext.render(customerId).as(Long.class).orElseThrow();
+        Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
         
-        URI uri = buildApiUrl(runContext, "/customers/" + customerIdValue + ".json");
+        URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
         HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
-        runContext.logger().debug("Deleting customer {} from Shopify API: {}", customerIdValue, uri);
+        runContext.logger().debug("Deleting customer {} from Shopify API: {}", rCustomerId, uri);
         
         handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         
         if (response.statusCode() >= 400) {
             throw new RuntimeException(String.format("Failed to delete customer %d: %s", 
-                customerIdValue, response.body()));
+                rCustomerId, response.body()));
         }
 
-        runContext.logger().info("Successfully deleted customer {} from Shopify", customerIdValue);
+        runContext.logger().info("Successfully deleted customer {} from Shopify", rCustomerId);
         
         return null;
     }

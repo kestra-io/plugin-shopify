@@ -56,20 +56,20 @@ public abstract class AbstractShopifyTask extends Task {
     protected Property<Duration> rateLimitDelay = Property.of(Duration.ofMillis(500));
 
     protected URI buildApiUrl(RunContext runContext, String path) throws Exception {
-        String domain = runContext.render(storeDomain).as(String.class).orElseThrow(() -> 
+        String rStoreDomain = runContext.render(storeDomain).as(String.class).orElseThrow(() -> 
             new IllegalArgumentException("Store domain is required"));
-        String version = runContext.render(apiVersion).as(String.class).orElse("2024-10");
+        String rApiVersion = runContext.render(apiVersion).as(String.class).orElse("2024-10");
         
-        return URI.create(String.format("https://%s/admin/api/%s%s", domain, version, path));
+        return URI.create(String.format("https://%s/admin/api/%s%s", rStoreDomain, rApiVersion, path));
     }
 
     protected HttpRequest buildAuthenticatedRequest(RunContext runContext, String method, URI uri, Object body) throws Exception {
-        String token = runContext.render(accessToken).as(String.class).orElseThrow(() ->
+        String rAccessToken = runContext.render(accessToken).as(String.class).orElseThrow(() ->
             new IllegalArgumentException("Access token is required"));
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
             .uri(uri)
-            .header("X-Shopify-Access-Token", token)
+            .header("X-Shopify-Access-Token", rAccessToken)
             .header("Content-Type", "application/json")
             .header("Accept", "application/json");
 

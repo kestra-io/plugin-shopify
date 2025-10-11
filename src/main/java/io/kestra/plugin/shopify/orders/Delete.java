@@ -58,13 +58,13 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
     @Override
     public Output run(RunContext runContext) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
-        Long orderIdValue = runContext.render(orderId).as(Long.class)
+        Long rOrderId = runContext.render(orderId).as(Long.class)
         .orElseThrow(() -> new IllegalArgumentException("Order ID is required"));
 
-        URI uri = buildApiUrl(runContext, "/orders/" + orderIdValue + ".json");
+        URI uri = buildApiUrl(runContext, "/orders/" + rOrderId + ".json");
         HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
-        runContext.logger().debug("Deleting order {} from Shopify API: {}", orderIdValue, uri);
+        runContext.logger().debug("Deleting order {} from Shopify API: {}", rOrderId, uri);
         
         handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -76,10 +76,10 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
             response.statusCode(), errorBody));
         }
 
-        runContext.logger().info("Successfully deleted order (ID: {}) from Shopify", orderIdValue);
+        runContext.logger().info("Successfully deleted order (ID: {}) from Shopify", rOrderId);
 
         return Output.builder()
-        .orderId(orderIdValue)
+        .orderId(rOrderId)
         .deleted(true)
         .build();
     }

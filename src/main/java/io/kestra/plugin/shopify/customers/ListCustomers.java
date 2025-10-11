@@ -74,9 +74,9 @@ public class ListCustomers extends AbstractShopifyTask implements RunnableTask<L
         java.util.List<String> queryParams = new ArrayList<>();
         
         if (limit != null) {
-            Integer limitValue = runContext.render(limit).as(Integer.class).orElse(null);
-            if (limitValue != null) {
-                queryParams.add("limit=" + limitValue);
+            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
+            if (rLimit != null) {
+                queryParams.add("limit=" + rLimit);
             }
         }
         
@@ -101,9 +101,9 @@ public class ListCustomers extends AbstractShopifyTask implements RunnableTask<L
             .map(Customer::fromMap)
             .collect(Collectors.toList());
             
-        FetchType fetchTypeValue = Property.as(fetchType, runContext, FetchType.class);
+        FetchType rFetchType = Property.as(fetchType, runContext, FetchType.class);
         
-        switch (fetchTypeValue) {
+        switch (rFetchType) {
             case FETCH_ONE:
                 if (customers.isEmpty()) {
                     return Output.builder().customers(java.util.List.of()).count(0).build();

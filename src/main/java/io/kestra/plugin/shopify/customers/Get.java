@@ -60,12 +60,12 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
     public Output run(RunContext runContext) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         
-        Long customerIdValue = runContext.render(customerId).as(Long.class).orElseThrow();
+        Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
         
-        URI uri = buildApiUrl(runContext, "/customers/" + customerIdValue + ".json");
+        URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
         HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
 
-        runContext.logger().debug("Getting customer {} from Shopify API: {}", customerIdValue, uri);
+        runContext.logger().debug("Getting customer {} from Shopify API: {}", rCustomerId, uri);
         
         handleRateLimit(runContext);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -75,7 +75,7 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
         Map<String, Object> customerData = (Map<String, Object>) responseData.get("customer");
         
         if (customerData == null) {
-            throw new RuntimeException("Customer not found: " + customerIdValue);
+            throw new RuntimeException("Customer not found: " + rCustomerId);
         }
         
         Customer customer = JacksonMapper.ofJson().convertValue(customerData, Customer.class);
