@@ -1,5 +1,8 @@
 package io.kestra.plugin.shopify.customers;
 
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
@@ -13,9 +16,6 @@ import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 @SuperBuilder
 @ToString
@@ -56,25 +56,25 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<VoidOutp
 
     @Override
     public VoidOutput run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        
-        Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
-        
-        URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
+            Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
+            
+            URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
+            HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
-        runContext.logger().debug("Deleting customer {} from Shopify API: {}", rCustomerId, uri);
-        
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        
-        if (response.statusCode() >= 400) {
-            throw new RuntimeException(String.format("Failed to delete customer %d: %s", 
-                rCustomerId, response.body()));
+            runContext.logger().debug("Deleting customer {} from Shopify API: {}", rCustomerId, uri);
+            
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            
+            if (response.getStatus().getCode() >= 400) {
+                throw new RuntimeException(String.format("Failed to delete customer %d: %s", 
+                    rCustomerId, response.getBody()));
+            }
+
+            runContext.logger().info("Successfully deleted customer {} from Shopify", rCustomerId);
+            
+            return null;
         }
-
-        runContext.logger().info("Successfully deleted customer {} from Shopify", rCustomerId);
-        
-        return null;
     }
 }

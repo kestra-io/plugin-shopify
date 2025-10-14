@@ -1,5 +1,8 @@
 package io.kestra.plugin.shopify.customers;
 
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
@@ -14,9 +17,6 @@ import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +79,7 @@ public class Create extends AbstractShopifyTask implements RunnableTask<Create.O
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
         
         String rEmail = runContext.render(email).as(String.class).orElseThrow();
         String rFirstName = runContext.render(firstName).as(String.class).orElse(null);
@@ -94,27 +94,26 @@ public class Create extends AbstractShopifyTask implements RunnableTask<Create.O
         
         Map<String, Object> requestBody = Map.of("customer", customerData);
 
-        URI uri = buildApiUrl(runContext, "/customers.json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "POST", uri, requestBody);
+            URI uri = buildApiUrl(runContext, "/customers.json");
+            HttpRequest request = buildAuthenticatedRequest(runContext, "POST", uri, requestBody);
 
-        runContext.logger().debug("Creating customer in Shopify API: {}", uri);
+            runContext.logger().debug("Creating customer in Shopify API: {}", uri);
+            
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            Map<String, Object> responseData = parseResponse(response);
         
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        Map<String, Object> responseData = parseResponse(response);
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object> createdCustomerData = (Map<String, Object>) responseData.get("customer");
-        Customer customer = JacksonMapper.ofJson().convertValue(createdCustomerData, Customer.class);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> createdCustomerData = (Map<String, Object>) responseData.get("customer");
+            Customer customer = JacksonMapper.ofJson().convertValue(createdCustomerData, Customer.class);
 
-        runContext.logger().info("Created customer with ID: {}", customer.getId());
+            runContext.logger().info("Created customer with ID: {}", customer.getId());
 
-        return Output.builder()
-            .customer(customer)
-            .build();
-    }
-
-    @Builder
+            return Output.builder()
+                .customer(customer)
+                .build();
+        }
+    }    @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(

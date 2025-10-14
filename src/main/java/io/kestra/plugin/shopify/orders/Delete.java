@@ -1,8 +1,8 @@
 package io.kestra.plugin.shopify.orders;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import java.io.IOException;
 import java.lang.InterruptedException;
 import io.kestra.core.models.annotations.Example;
@@ -57,31 +57,32 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        Long rOrderId = runContext.render(orderId).as(Long.class)
-        .orElseThrow(() -> new IllegalArgumentException("Order ID is required"));
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
+            Long rOrderId = runContext.render(orderId).as(Long.class)
+                .orElseThrow(() -> new IllegalArgumentException("Order ID is required"));
 
-        URI uri = buildApiUrl(runContext, "/orders/" + rOrderId + ".json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
+            URI uri = buildApiUrl(runContext, "/orders/" + rOrderId + ".json");
+            HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
-        runContext.logger().debug("Deleting order {} from Shopify API: {}", rOrderId, uri);
-        
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        
-        // For DELETE requests, Shopify returns 200 with empty body on success
-        if (response.statusCode() != 200) {
-        String errorBody = response.body() != null ? response.body() : "Unknown error";
-        throw new RuntimeException(String.format("Failed to delete order with status %d: %s", 
-            response.statusCode(), errorBody));
+            runContext.logger().debug("Deleting order {} from Shopify API: {}", rOrderId, uri);
+            
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            
+            // For DELETE requests, Shopify returns 200 with empty body on success
+            if (response.getStatus().getCode() != 200) {
+                String errorBody = response.getBody() != null ? response.getBody() : "Unknown error";
+                throw new RuntimeException(String.format("Failed to delete order with status %d: %s", 
+                    response.getStatus().getCode(), errorBody));
+            }
+
+            runContext.logger().info("Successfully deleted order (ID: {}) from Shopify", rOrderId);
+
+            return Output.builder()
+                .orderId(rOrderId)
+                .deleted(true)
+                .build();
         }
-
-        runContext.logger().info("Successfully deleted order (ID: {}) from Shopify", rOrderId);
-
-        return Output.builder()
-        .orderId(rOrderId)
-        .deleted(true)
-        .build();
     }
 
     @Builder

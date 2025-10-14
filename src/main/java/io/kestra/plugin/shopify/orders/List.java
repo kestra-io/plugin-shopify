@@ -1,5 +1,8 @@
 package io.kestra.plugin.shopify.orders;
 
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
@@ -14,9 +17,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.BufferedWriter;
@@ -136,7 +136,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
         
         // Build query parameters
         java.util.List<String> queryParams = new ArrayList<>();
@@ -178,44 +178,45 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
         runContext.logger().debug("Listing orders from Shopify API: {}", uri);
         
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        Map<String, Object> responseData = parseResponse(response);
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            Map<String, Object> responseData = parseResponse(response);
         
-        @SuppressWarnings("unchecked")
-        java.util.List<Map<String, Object>> ordersData = (java.util.List<Map<String, Object>>) responseData.get("orders");
-        
-        if (ordersData == null) {
-            ordersData = new ArrayList<>();
-        }
-        
-        java.util.List<Order> orders = ordersData.stream()
-            .map(orderData -> JacksonMapper.ofJson().convertValue(orderData, Order.class))
-            .toList();
+            @SuppressWarnings("unchecked")
+            java.util.List<Map<String, Object>> ordersData = (java.util.List<Map<String, Object>>) responseData.get("orders");
+            
+            if (ordersData == null) {
+                ordersData = new ArrayList<>();
+            }
+            
+            java.util.List<Order> orders = ordersData.stream()
+                .map(orderData -> JacksonMapper.ofJson().convertValue(orderData, Order.class))
+                .toList();
 
-        runContext.logger().info("Retrieved {} orders from Shopify", orders.size());
+            runContext.logger().info("Retrieved {} orders from Shopify", orders.size());
 
-        // Handle fetchType properly according to maintainer feedback
-        FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
-        
-        switch (rFetchType) {
-            case FETCH_ONE:
-                if (orders.isEmpty()) {
-                    return Output.builder().orders(java.util.Collections.emptyList()).count(0).build();
-                }
-                return Output.builder().orders(java.util.List.of(orders.get(0))).count(1).build();
-            case FETCH:
-                return Output.builder().orders(orders).count(orders.size()).build();
-            case STORE:
-                java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
-                try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
-                    reactor.core.publisher.Flux<Order> orderFlux = reactor.core.publisher.Flux.fromIterable(orders);
-                    Long count = io.kestra.core.serializers.FileSerde.writeAll(output, orderFlux).block();
-                    URI storedUri = runContext.storage().putFile(tempFile);
-                    return Output.builder().count(count.intValue()).uri(storedUri).build();
-                }
-            default:
-                return Output.builder().orders(orders).count(orders.size()).build();
+            // Handle fetchType properly according to maintainer feedback
+            FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
+            
+            switch (rFetchType) {
+                case FETCH_ONE:
+                    if (orders.isEmpty()) {
+                        return Output.builder().orders(java.util.Collections.emptyList()).count(0).build();
+                    }
+                    return Output.builder().orders(java.util.List.of(orders.get(0))).count(1).build();
+                case FETCH:
+                    return Output.builder().orders(orders).count(orders.size()).build();
+                case STORE:
+                    java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+                    try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
+                        reactor.core.publisher.Flux<Order> orderFlux = reactor.core.publisher.Flux.fromIterable(orders);
+                        Long count = io.kestra.core.serializers.FileSerde.writeAll(output, orderFlux).block();
+                        URI storedUri = runContext.storage().putFile(tempFile);
+                        return Output.builder().count(count.intValue()).uri(storedUri).build();
+                    }
+                default:
+                    return Output.builder().orders(orders).count(orders.size()).build();
+            }
         }
     }
 

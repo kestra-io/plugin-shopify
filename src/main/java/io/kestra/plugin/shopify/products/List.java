@@ -16,9 +16,9 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
 import java.util.ArrayList;
 
 import java.util.Map;
@@ -145,7 +145,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
         
         // Build query parameters
         java.util.List<String> queryParams = new ArrayList<>();
@@ -197,44 +197,45 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
         runContext.logger().debug("Listing products from Shopify API: {}", uri);
         
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        Map<String, Object> responseData = parseResponse(response);
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            Map<String, Object> responseData = parseResponse(response);
         
-        @SuppressWarnings("unchecked")
-        java.util.List<Map<String, Object>> productsData = (java.util.List<Map<String, Object>>) responseData.get("products");
-        
-        if (productsData == null) {
-            productsData = new ArrayList<>();
-        }
-        
-        java.util.List<Product> products = productsData.stream()
-            .map(productData -> JacksonMapper.ofJson().convertValue(productData, Product.class))
-            .toList();
+            @SuppressWarnings("unchecked")
+            java.util.List<Map<String, Object>> productsData = (java.util.List<Map<String, Object>>) responseData.get("products");
+            
+            if (productsData == null) {
+                productsData = new ArrayList<>();
+            }
+            
+            java.util.List<Product> products = productsData.stream()
+                .map(productData -> JacksonMapper.ofJson().convertValue(productData, Product.class))
+                .toList();
 
-        runContext.logger().info("Retrieved {} products from Shopify", products.size());
+            runContext.logger().info("Retrieved {} products from Shopify", products.size());
 
-        // Handle fetchType properly according to maintainer feedback
-        FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
-        
-        switch (rFetchType) {
-            case FETCH_ONE:
-                if (products.isEmpty()) {
-                    return Output.builder().products(java.util.Collections.emptyList()).count(0).build();
-                }
-                return Output.builder().products(java.util.List.of(products.get(0))).count(1).build();
-            case FETCH:
-                return Output.builder().products(products).count(products.size()).build();
-            case STORE:
-                java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
-                try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
-                    reactor.core.publisher.Flux<Product> productFlux = reactor.core.publisher.Flux.fromIterable(products);
-                    Long count = io.kestra.core.serializers.FileSerde.writeAll(output, productFlux).block();
-                    URI storedUri = runContext.storage().putFile(tempFile);
-                    return Output.builder().count(count.intValue()).uri(storedUri).build();
-                }
-            default:
-                return Output.builder().products(products).count(products.size()).build();
+            // Handle fetchType properly according to maintainer feedback
+            FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
+            
+            switch (rFetchType) {
+                case FETCH_ONE:
+                    if (products.isEmpty()) {
+                        return Output.builder().products(java.util.Collections.emptyList()).count(0).build();
+                    }
+                    return Output.builder().products(java.util.List.of(products.get(0))).count(1).build();
+                case FETCH:
+                    return Output.builder().products(products).count(products.size()).build();
+                case STORE:
+                    java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+                    try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
+                        reactor.core.publisher.Flux<Product> productFlux = reactor.core.publisher.Flux.fromIterable(products);
+                        Long count = io.kestra.core.serializers.FileSerde.writeAll(output, productFlux).block();
+                        URI storedUri = runContext.storage().putFile(tempFile);
+                        return Output.builder().count(count.intValue()).uri(storedUri).build();
+                    }
+                default:
+                    return Output.builder().products(products).count(products.size()).build();
+            }
         }
     }
 

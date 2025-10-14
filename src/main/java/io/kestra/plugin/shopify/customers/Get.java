@@ -1,5 +1,8 @@
 package io.kestra.plugin.shopify.customers;
 
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
@@ -14,9 +17,6 @@ import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Map;
 
 @SuperBuilder
@@ -58,34 +58,34 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        
-        Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
-        
-        URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
+            Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
+            
+            URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
+            HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
 
-        runContext.logger().debug("Getting customer {} from Shopify API: {}", rCustomerId, uri);
-        
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        Map<String, Object> responseData = parseResponse(response);
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object> customerData = (Map<String, Object>) responseData.get("customer");
-        
-        if (customerData == null) {
-            throw new RuntimeException("Customer not found: " + rCustomerId);
+            runContext.logger().debug("Getting customer {} from Shopify API: {}", rCustomerId, uri);
+            
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            Map<String, Object> responseData = parseResponse(response);
+            
+            @SuppressWarnings("unchecked")
+            Map<String, Object> customerData = (Map<String, Object>) responseData.get("customer");
+            
+            if (customerData == null) {
+                throw new RuntimeException("Customer not found: " + rCustomerId);
+            }
+            
+            Customer customer = JacksonMapper.ofJson().convertValue(customerData, Customer.class);
+
+            runContext.logger().info("Retrieved customer '{}' (ID: {}) from Shopify", 
+                customer.getEmail(), customer.getId());
+
+            return Output.builder()
+                .customer(customer)
+                .build();
         }
-        
-        Customer customer = JacksonMapper.ofJson().convertValue(customerData, Customer.class);
-
-        runContext.logger().info("Retrieved customer '{}' (ID: {}) from Shopify", 
-            customer.getEmail(), customer.getId());
-
-        return Output.builder()
-            .customer(customer)
-            .build();
     }
 
     @Builder

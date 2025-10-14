@@ -1,8 +1,8 @@
 package io.kestra.plugin.shopify;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
@@ -67,17 +67,19 @@ public abstract class AbstractShopifyTask extends Task {
         String rAccessToken = runContext.render(accessToken).as(String.class).orElseThrow(() ->
             new IllegalArgumentException("Access token is required"));
 
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+        HttpRequest.HttpRequestBuilder requestBuilder = HttpRequest.builder()
             .uri(uri)
-            .header("X-Shopify-Access-Token", rAccessToken)
-            .header("Content-Type", "application/json")
-            .header("Accept", "application/json");
+            .method(method)
+            .addHeader("X-Shopify-Access-Token", rAccessToken)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Accept", "application/json");
 
         if (body != null) {
             String jsonBody = JacksonMapper.ofJson().writeValueAsString(body);
-            requestBuilder.method(method, HttpRequest.BodyPublishers.ofString(jsonBody));
-        } else {
-            requestBuilder.method(method, HttpRequest.BodyPublishers.noBody());
+            requestBuilder.body(HttpRequest.StringRequestBody.builder()
+                .content(jsonBody)
+                .contentType("application/json")
+                .build());
         }
 
         return requestBuilder.build();
@@ -91,11 +93,11 @@ public abstract class AbstractShopifyTask extends Task {
     }
 
     protected Map<String, Object> parseResponse(HttpResponse<String> response) throws Exception {
-        if (response.statusCode() >= 400) {
+        if (response.getStatus().getCode() >= 400) {
             throw new RuntimeException(String.format("Shopify API error: %d - %s", 
-                response.statusCode(), response.body()));
+                response.getStatus().getCode(), response.getBody()));
         }
 
-        return JacksonMapper.ofJson().readValue(response.body(), Map.class);
+        return JacksonMapper.ofJson().readValue(response.getBody(), Map.class);
     }
 }

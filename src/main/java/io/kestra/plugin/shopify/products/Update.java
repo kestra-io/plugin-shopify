@@ -1,8 +1,8 @@
 package io.kestra.plugin.shopify.products;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
 import java.io.IOException;
 import java.lang.InterruptedException;
 import io.kestra.core.models.annotations.Example;
@@ -127,19 +127,19 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        Long rProductId = runContext.render(productId).as(Long.class)
-        .orElseThrow(() -> new IllegalArgumentException("Product ID is required"));
+        try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
+            Long rProductId = runContext.render(productId).as(Long.class)
+                .orElseThrow(() -> new IllegalArgumentException("Product ID is required"));
 
-        // Build product update object - only include fields that are provided
-        Map<String, Object> productData = new java.util.HashMap<>();
+            // Build product update object - only include fields that are provided
+            Map<String, Object> productData = new java.util.HashMap<>();
 
-        if (title != null) {
-        String rTitle = runContext.render(title).as(String.class).orElse(null);
-        if (rTitle != null) {
-            productData.put("title", rTitle);
-        }
-        }
+            if (title != null) {
+                String rTitle = runContext.render(title).as(String.class).orElse(null);
+                if (rTitle != null) {
+                    productData.put("title", rTitle);
+                }
+            }
 
         if (bodyHtml != null) {
         String rBodyHtml = runContext.render(bodyHtml).as(String.class).orElse(null);
@@ -217,39 +217,40 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         }
         }
 
-        if (productData.isEmpty()) {
-        throw new IllegalArgumentException("At least one field must be provided to update the product");
+            if (productData.isEmpty()) {
+                throw new IllegalArgumentException("At least one field must be provided to update the product");
+            }
+
+            // Add the product ID to ensure we're updating the right product
+            productData.put("id", rProductId);
+
+            Map<String, Object> requestBody = Map.of("product", productData);
+
+            URI uri = buildApiUrl(runContext, "/products/" + rProductId + ".json");
+            HttpRequest request = buildAuthenticatedRequest(runContext, "PUT", uri, requestBody);
+
+            runContext.logger().debug("Updating product {} in Shopify API: {}", rProductId, uri);
+            
+            handleRateLimit(runContext);
+            HttpResponse<String> response = client.request(request, String.class);
+            Map<String, Object> responseData = parseResponse(response);
+        
+            @SuppressWarnings("unchecked")
+            Map<String, Object> updatedProductData = (Map<String, Object>) responseData.get("product");
+            
+            if (updatedProductData == null) {
+                throw new RuntimeException("Failed to update product - no product data returned");
+            }
+            
+            Product updatedProduct = JacksonMapper.ofJson().convertValue(updatedProductData, Product.class);
+
+            runContext.logger().info("Updated product '{}' (ID: {}) in Shopify", 
+                updatedProduct.getTitle(), updatedProduct.getId());
+
+            return Output.builder()
+                .product(updatedProduct)
+                .build();
         }
-
-        // Add the product ID to ensure we're updating the right product
-        productData.put("id", rProductId);
-
-        Map<String, Object> requestBody = Map.of("product", productData);
-
-        URI uri = buildApiUrl(runContext, "/products/" + rProductId + ".json");
-        HttpRequest request = buildAuthenticatedRequest(runContext, "PUT", uri, requestBody);
-
-        runContext.logger().debug("Updating product {} in Shopify API: {}", rProductId, uri);
-        
-        handleRateLimit(runContext);
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        Map<String, Object> responseData = parseResponse(response);
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object> updatedProductData = (Map<String, Object>) responseData.get("product");
-        
-        if (updatedProductData == null) {
-        throw new RuntimeException("Failed to update product - no product data returned");
-        }
-        
-        Product updatedProduct = JacksonMapper.ofJson().convertValue(updatedProductData, Product.class);
-
-        runContext.logger().info("Updated product '{}' (ID: {}) in Shopify", 
-        updatedProduct.getTitle(), updatedProduct.getId());
-
-        return Output.builder()
-        .product(updatedProduct)
-        .build();
     }
 
     @Builder
