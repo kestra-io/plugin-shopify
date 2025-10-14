@@ -30,19 +30,19 @@ import java.net.URI;
 @Plugin(
     examples = {
         @Example(
-        title = "Delete order by ID",
-        full = true,
-        code = """
+            title = "Delete order by ID",
+            full = true,
+            code = """
                 id: shopify_delete_order
                 namespace: company.team
-
+                
                 tasks:
                   - id: delete_order
-            type: io.kestra.plugin.shopify.orders.Delete
-            storeDomain: my-store.myshopify.com
-            accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-            orderId: 123456789
-        """
+                    type: io.kestra.plugin.shopify.orders.Delete
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                    orderId: 123456789
+                """
         )
     }
 )

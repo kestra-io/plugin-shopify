@@ -39,11 +39,11 @@ import java.util.stream.Collectors;
             title = "List all products",
             full = true,
             code = """
-                        id: shopify_list_products
-                        namespace: company.team
+                id: shopify_list_products
+                namespace: company.team
                 
-                        tasks:
-                          - id: list_products
+                tasks:
+                  - id: list_products
                     type: io.kestra.plugin.shopify.products.List
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
@@ -53,11 +53,11 @@ import java.util.stream.Collectors;
             title = "List products with filtering",
             full = true,
             code = """
-                        id: shopify_list_products_filtered
-                        namespace: company.team
+                id: shopify_list_products_filtered
+                namespace: company.team
                 
-                        tasks:
-                          - id: list_products
+                tasks:
+                  - id: list_products
                     type: io.kestra.plugin.shopify.products.List
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
@@ -150,33 +150,17 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         // Build query parameters
         java.util.List<String> queryParams = new ArrayList<>();
         
-        if (limit != null) {
-            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
-            if (rLimit != null) {
-                queryParams.add("limit=" + rLimit);
-            }
-        }
+        runContext.render(limit).as(Integer.class).ifPresent(rLimit -> 
+            queryParams.add("limit=" + rLimit));
         
-        if (sinceId != null) {
-            Long rSinceId = runContext.render(sinceId).as(Long.class).orElse(null);
-            if (rSinceId != null) {
-                queryParams.add("since_id=" + rSinceId);
-            }
-        }
+        runContext.render(sinceId).as(Long.class).ifPresent(rSinceId -> 
+            queryParams.add("since_id=" + rSinceId));
         
-        if (status != null) {
-            ProductStatus rStatus = runContext.render(status).as(ProductStatus.class).orElse(null);
-            if (rStatus != null) {
-                queryParams.add("status=" + rStatus.name().toLowerCase());
-            }
-        }
+        runContext.render(status).as(ProductStatus.class).ifPresent(rStatus -> 
+            queryParams.add("status=" + rStatus.name().toLowerCase()));
         
-        if (publishedStatus != null) {
-            PublishedStatus rPublished = runContext.render(publishedStatus).as(PublishedStatus.class).orElse(null);
-            if (rPublished != null) {
-                queryParams.add("published_status=" + rPublished.name().toLowerCase());
-            }
-        }
+        runContext.render(publishedStatus).as(PublishedStatus.class).ifPresent(rPublished -> 
+            queryParams.add("published_status=" + rPublished.name().toLowerCase()));
         
         if (productType != null) {
             String rProductType = runContext.render(productType).as(String.class).orElse(null);
@@ -185,47 +169,23 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             }
         }
         
-        if (vendor != null) {
-            String rVendor = runContext.render(vendor).as(String.class).orElse(null);
-            if (rVendor != null) {
-                queryParams.add("vendor=" + rVendor);
-            }
-        }
+        runContext.render(vendor).as(String.class).ifPresent(rVendor -> 
+            queryParams.add("vendor=" + rVendor));
         
-        if (handle != null) {
-            String rHandle = runContext.render(handle).as(String.class).orElse(null);
-            if (rHandle != null) {
-                queryParams.add("handle=" + rHandle);
-            }
-        }
+        runContext.render(handle).as(String.class).ifPresent(rHandle -> 
+            queryParams.add("handle=" + rHandle));
         
-        if (createdAtMin != null) {
-            String rCreatedAtMin = runContext.render(createdAtMin).as(String.class).orElse(null);
-            if (rCreatedAtMin != null) {
-                queryParams.add("created_at_min=" + rCreatedAtMin);
-            }
-        }
+        runContext.render(createdAtMin).as(String.class).ifPresent(rCreatedAtMin -> 
+            queryParams.add("created_at_min=" + rCreatedAtMin));
         
-        if (createdAtMax != null) {
-            String rCreatedAtMax = runContext.render(createdAtMax).as(String.class).orElse(null);
-            if (rCreatedAtMax != null) {
-                queryParams.add("created_at_max=" + rCreatedAtMax);
-            }
-        }
+        runContext.render(createdAtMax).as(String.class).ifPresent(rCreatedAtMax -> 
+            queryParams.add("created_at_max=" + rCreatedAtMax));
         
-        if (updatedAtMin != null) {
-            String rUpdatedAtMin = runContext.render(updatedAtMin).as(String.class).orElse(null);
-            if (rUpdatedAtMin != null) {
-                queryParams.add("updated_at_min=" + rUpdatedAtMin);
-            }
-        }
+        runContext.render(updatedAtMin).as(String.class).ifPresent(rUpdatedAtMin -> 
+            queryParams.add("updated_at_min=" + rUpdatedAtMin));
         
-        if (updatedAtMax != null) {
-            String rUpdatedAtMax = runContext.render(updatedAtMax).as(String.class).orElse(null);
-            if (rUpdatedAtMax != null) {
-                queryParams.add("updated_at_max=" + rUpdatedAtMax);
-            }
-        }
+        runContext.render(updatedAtMax).as(String.class).ifPresent(rUpdatedAtMax -> 
+            queryParams.add("updated_at_max=" + rUpdatedAtMax));
 
         String path = "/products.json";
         if (!queryParams.isEmpty()) {
@@ -266,17 +226,13 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             case FETCH:
                 return Output.builder().products(products).count(products.size()).build();
             case STORE:
-                java.util.List<String> uris = new ArrayList<>();
-                for (Product product : products) {
-                    URI storedUri = runContext.storage().putFile(
-                        new java.io.ByteArrayInputStream(
-                            JacksonMapper.ofJson().writeValueAsString(product).getBytes(java.nio.charset.StandardCharsets.UTF_8)
-                        ),
-                        "product_" + product.getId() + ".json"
-                    );
-                    uris.add(storedUri.toString());
+                java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+                try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
+                    reactor.core.publisher.Flux<Product> productFlux = reactor.core.publisher.Flux.fromIterable(products);
+                    Long count = io.kestra.core.serializers.FileSerde.writeAll(output, productFlux).block();
+                    URI storedUri = runContext.storage().putFile(tempFile);
+                    return Output.builder().count(count.intValue()).uri(storedUri).build();
                 }
-                return Output.builder().products(products).count(products.size()).uris(uris).build();
             default:
                 return Output.builder().products(products).count(products.size()).build();
         }
@@ -287,7 +243,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Products",
-            description = "List of products retrieved from Shopify"
+            description = "List of products retrieved from Shopify. Only populated if using fetchType=FETCH or FETCH_ONE."
         )
         private final java.util.List<Product> products;
         
@@ -298,9 +254,9 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         private final Integer count;
         
         @Schema(
-            title = "URIs",
-            description = "URIs of stored product files when fetchType is STORE"
+            title = "URI",
+            description = "URI of the stored data. Only populated if using fetchType=STORE."
         )
-        private final java.util.List<String> uris;
+        private final URI uri;
     }
 }

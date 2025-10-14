@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 
 @SuperBuilder
@@ -80,12 +81,16 @@ public class Create extends AbstractShopifyTask implements RunnableTask<Create.O
     public Output run(RunContext runContext) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         
-        Map<String, Object> customerData = Map.of(
-            "email", runContext.render(email).as(String.class).orElseThrow(),
-            "first_name", runContext.render(firstName).as(String.class).orElse(null),
-            "last_name", runContext.render(lastName).as(String.class).orElse(null),
-            "phone", runContext.render(phone).as(String.class).orElse(null)
-        );
+        String rEmail = runContext.render(email).as(String.class).orElseThrow();
+        String rFirstName = runContext.render(firstName).as(String.class).orElse(null);
+        String rLastName = runContext.render(lastName).as(String.class).orElse(null);
+        String rPhone = runContext.render(phone).as(String.class).orElse(null);
+        
+        Map<String, Object> customerData = new HashMap<>();
+        customerData.put("email", rEmail);
+        if (rFirstName != null) customerData.put("first_name", rFirstName);
+        if (rLastName != null) customerData.put("last_name", rLastName);
+        if (rPhone != null) customerData.put("phone", rPhone);
         
         Map<String, Object> requestBody = Map.of("customer", customerData);
 

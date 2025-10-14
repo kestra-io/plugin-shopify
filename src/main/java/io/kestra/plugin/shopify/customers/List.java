@@ -14,12 +14,10 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.validation.constraints.NotNull;
-import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,12 +71,8 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         
         java.util.List<String> queryParams = new ArrayList<>();
         
-        if (limit != null) {
-            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
-            if (rLimit != null) {
-                queryParams.add("limit=" + rLimit);
-            }
-        }
+        runContext.render(limit).as(Integer.class).ifPresent(rLimit -> 
+            queryParams.add("limit=" + rLimit));
         
         String path = "/customers.json";
         if (!queryParams.isEmpty()) {
@@ -110,18 +104,13 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
                 }
                 return Output.builder().customers(java.util.List.of(customers.get(0))).count(1).build();
             case STORE:
-                // Store customers in Kestra internal storage
-                java.util.List<String> uris = new ArrayList<>();
-                for (Customer customer : customers) {
-                    URI storedUri = runContext.storage().putFile(
-                        new ByteArrayInputStream(
-                            JacksonMapper.ofJson().writeValueAsString(customer).getBytes(StandardCharsets.UTF_8)
-                        ),
-                        "customer_" + customer.getId() + ".json"
-                    );
-                    uris.add(storedUri.toString());
+                java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+                try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
+                    reactor.core.publisher.Flux<Customer> customerFlux = reactor.core.publisher.Flux.fromIterable(customers);
+                    Long count = io.kestra.core.serializers.FileSerde.writeAll(output, customerFlux).block();
+                    URI storedUri = runContext.storage().putFile(tempFile);
+                    return Output.builder().count(count.intValue()).uri(storedUri).build();
                 }
-                return Output.builder().customers(customers).count(customers.size()).uris(uris).build();
             case FETCH:
             default:
                 return Output.builder().customers(customers).count(customers.size()).build();
@@ -132,8 +121,8 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-            title = "List of customers",
-            description = "The retrieved customers from Shopify"
+            title = "Customers",
+            description = "List of customers retrieved from Shopify. Only populated if using fetchType=FETCH or FETCH_ONE."
         )
         private final java.util.List<Customer> customers;
         
@@ -144,9 +133,9 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         private final Integer count;
         
         @Schema(
-            title = "URIs",
-            description = "URIs of stored customer files when fetchType is STORE"
+            title = "URI",
+            description = "URI of the stored data. Only populated if using fetchType=STORE."
         )
-        private final java.util.List<String> uris;
+        private final URI uri;
     }
 }

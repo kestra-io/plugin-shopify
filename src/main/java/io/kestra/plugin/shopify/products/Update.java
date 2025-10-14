@@ -37,17 +37,17 @@ import java.util.Map;
         code = """
                 id: shopify_update_product
                 namespace: company.team
-
+                
                 tasks:
                   - id: update_product
-            type: io.kestra.plugin.shopify.products.Update
-            storeDomain: my-store.myshopify.com
-            accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-            productId: 123456789
-            title: "Updated T-Shirt Title"
-            bodyHtml: "<p>Updated description for the t-shirt</p>"
-            status: "active"
-        """
+                    type: io.kestra.plugin.shopify.products.Update
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                    productId: 123456789
+                    title: "Updated T-Shirt Title"
+                    bodyHtml: "<p>Updated description for the t-shirt</p>"
+                    status: "active"
+                """
         )
     }
 )
