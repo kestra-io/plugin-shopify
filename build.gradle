@@ -90,6 +90,13 @@ dependencies {
     testImplementation "io.qameta.allure:allure-junit5"
 }
 
+configurations {
+    testImplementation.extendsFrom annotationProcessor
+}
+
+/**********************************************************************************************************************\
+ * Test
+ **********************************************************************************************************************/
 test {
     useJUnitPlatform()
 }

@@ -18,6 +18,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import io.kestra.core.serializers.FileSerde;
+import reactor.core.publisher.Flux;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,11 +42,11 @@ import java.util.stream.Collectors;
             title = "List all orders",
             full = true,
             code = """
-                        id: shopify_list_orders
-                        namespace: company.team
+                id: shopify_list_orders
+                namespace: company.team
                 
-                        tasks:
-                          - id: list_orders
+                tasks:
+                  - id: list_orders
                     type: io.kestra.plugin.shopify.orders.List
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
@@ -51,11 +56,11 @@ import java.util.stream.Collectors;
             title = "List orders with filtering",
             full = true,
             code = """
-                        id: shopify_list_orders_filtered
-                        namespace: company.team
+                id: shopify_list_orders_filtered
+                namespace: company.team
                 
-                        tasks:
-                          - id: list_orders
+                tasks:
+                  - id: list_orders
                     type: io.kestra.plugin.shopify.orders.List
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
@@ -136,68 +141,32 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         // Build query parameters
         java.util.List<String> queryParams = new ArrayList<>();
         
-        if (limit != null) {
-            Integer rLimit = runContext.render(limit).as(Integer.class).orElse(null);
-            if (rLimit != null) {
-                queryParams.add("limit=" + rLimit);
-            }
-        }
+        runContext.render(limit).as(Integer.class).ifPresent(rLimit -> 
+            queryParams.add("limit=" + rLimit));
         
-        if (sinceId != null) {
-            Long rSinceId = runContext.render(sinceId).as(Long.class).orElse(null);
-            if (rSinceId != null) {
-                queryParams.add("since_id=" + rSinceId);
-            }
-        }
+        runContext.render(sinceId).as(Long.class).ifPresent(rSinceId -> 
+            queryParams.add("since_id=" + rSinceId));
         
-        if (status != null) {
-            String rStatus = runContext.render(status).as(String.class).orElse(null);
-            if (rStatus != null) {
-                queryParams.add("status=" + rStatus);
-            }
-        }
+        runContext.render(status).as(String.class).ifPresent(rStatus -> 
+            queryParams.add("status=" + rStatus));
         
-        if (financialStatus != null) {
-            String rFinancialStatus = runContext.render(financialStatus).as(String.class).orElse(null);
-            if (rFinancialStatus != null) {
-                queryParams.add("financial_status=" + rFinancialStatus);
-            }
-        }
+        runContext.render(financialStatus).as(String.class).ifPresent(rFinancialStatus -> 
+            queryParams.add("financial_status=" + rFinancialStatus));
         
-        if (fulfillmentStatus != null) {
-            String rFulfillmentStatus = runContext.render(fulfillmentStatus).as(String.class).orElse(null);
-            if (rFulfillmentStatus != null) {
-                queryParams.add("fulfillment_status=" + rFulfillmentStatus);
-            }
-        }
+        runContext.render(fulfillmentStatus).as(String.class).ifPresent(rFulfillmentStatus -> 
+            queryParams.add("fulfillment_status=" + rFulfillmentStatus));
         
-        if (createdAtMin != null) {
-            String rCreatedAtMin = runContext.render(createdAtMin).as(String.class).orElse(null);
-            if (rCreatedAtMin != null) {
-                queryParams.add("created_at_min=" + rCreatedAtMin);
-            }
-        }
+        runContext.render(createdAtMin).as(String.class).ifPresent(rCreatedAtMin -> 
+            queryParams.add("created_at_min=" + rCreatedAtMin));
         
-        if (createdAtMax != null) {
-            String rCreatedAtMax = runContext.render(createdAtMax).as(String.class).orElse(null);
-            if (rCreatedAtMax != null) {
-                queryParams.add("created_at_max=" + rCreatedAtMax);
-            }
-        }
+        runContext.render(createdAtMax).as(String.class).ifPresent(rCreatedAtMax -> 
+            queryParams.add("created_at_max=" + rCreatedAtMax));
         
-        if (updatedAtMin != null) {
-            String rUpdatedAtMin = runContext.render(updatedAtMin).as(String.class).orElse(null);
-            if (rUpdatedAtMin != null) {
-                queryParams.add("updated_at_min=" + rUpdatedAtMin);
-            }
-        }
+        runContext.render(updatedAtMin).as(String.class).ifPresent(rUpdatedAtMin -> 
+            queryParams.add("updated_at_min=" + rUpdatedAtMin));
         
-        if (updatedAtMax != null) {
-            String rUpdatedAtMax = runContext.render(updatedAtMax).as(String.class).orElse(null);
-            if (rUpdatedAtMax != null) {
-                queryParams.add("updated_at_max=" + rUpdatedAtMax);
-            }
-        }
+        runContext.render(updatedAtMax).as(String.class).ifPresent(rUpdatedAtMax -> 
+            queryParams.add("updated_at_max=" + rUpdatedAtMax));
 
         String path = "/orders.json";
         if (!queryParams.isEmpty()) {
@@ -238,17 +207,13 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             case FETCH:
                 return Output.builder().orders(orders).count(orders.size()).build();
             case STORE:
-                java.util.List<String> uris = new ArrayList<>();
-                for (Order order : orders) {
-                    URI storedUri = runContext.storage().putFile(
-                        new java.io.ByteArrayInputStream(
-                            JacksonMapper.ofJson().writeValueAsString(order).getBytes(java.nio.charset.StandardCharsets.UTF_8)
-                        ),
-                        "order_" + order.getId() + ".json"
-                    );
-                    uris.add(storedUri.toString());
+                java.io.File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+                try (var output = new java.io.BufferedWriter(new java.io.FileWriter(tempFile), io.kestra.core.serializers.FileSerde.BUFFER_SIZE)) {
+                    reactor.core.publisher.Flux<Order> orderFlux = reactor.core.publisher.Flux.fromIterable(orders);
+                    Long count = io.kestra.core.serializers.FileSerde.writeAll(output, orderFlux).block();
+                    URI storedUri = runContext.storage().putFile(tempFile);
+                    return Output.builder().count(count.intValue()).uri(storedUri).build();
                 }
-                return Output.builder().orders(orders).count(orders.size()).uris(uris).build();
             default:
                 return Output.builder().orders(orders).count(orders.size()).build();
         }
@@ -259,7 +224,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Orders",
-            description = "List of orders retrieved from Shopify"
+            description = "List of orders retrieved from Shopify. Only populated if using fetchType=FETCH or FETCH_ONE."
         )
         private final java.util.List<Order> orders;
         
@@ -270,9 +235,9 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         private final Integer count;
         
         @Schema(
-            title = "URIs",
-            description = "URIs of stored order files when fetchType is STORE"
+            title = "URI",
+            description = "URI of the stored data. Only populated if using fetchType=STORE."
         )
-        private final java.util.List<String> uris;
+        private final URI uri;
     }
 }

@@ -44,14 +44,14 @@ import java.util.stream.Collectors;
                 
                 tasks:
                   - id: list_customers
-                    type: io.kestra.plugin.shopify.customers.ListCustomers
+                    type: io.kestra.plugin.shopify.customers.List
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                 """
         )
     }
 )
-public class ListCustomers extends AbstractShopifyTask implements RunnableTask<ListCustomers.Output> {
+public class List extends AbstractShopifyTask implements RunnableTask<List.Output> {
     
     @Schema(
         title = "Fetch type",
