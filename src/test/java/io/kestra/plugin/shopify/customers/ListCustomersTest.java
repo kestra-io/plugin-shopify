@@ -27,16 +27,16 @@ class ListCustomersTest {
         String storeDomain = System.getenv("SHOPIFY_STORE_DOMAIN");
         String accessToken = System.getenv("SHOPIFY_ACCESS_TOKEN");
 
-        ListCustomers task = ListCustomers.builder()
+        List task = List.builder()
             .id("test-task")
-            .type(ListCustomers.class.getName())
+            .type(List.class.getName())
             .storeDomain(Property.of(storeDomain))
             .accessToken(Property.of(accessToken))
             .limit(Property.of(5))
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
-        ListCustomers.Output output = task.run(runContext);
+        List.Output output = task.run(runContext);
 
         assertThat(output, notNullValue());
         assertThat(output.getCount(), greaterThanOrEqualTo(0));
@@ -52,9 +52,9 @@ class ListCustomersTest {
     @Test
     void testListCustomersRequiredFields() {
         // Test task validation - storeDomain is required
-        ListCustomers task = ListCustomers.builder()
+        List task = List.builder()
             .id("test-task")
-            .type(ListCustomers.class.getName())
+            .type(List.class.getName())
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
