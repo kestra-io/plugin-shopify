@@ -14,8 +14,8 @@ variables:
 
 tasks:
   - id: list_recent_customers
-    type: io.kestra.plugin.shopify.customers.ListCustomers
-    storeDomain: "{{ vars.store_domain }}"
+    type: io.kestra.plugin.shopify.customers.List
+    storeDomain: my-store.myshopify.com
     accessToken: "{{ vars.access_token }}"
     limit: 10
     createdAtMin: "{{ now() | dateAdd(-30, 'DAYS') | date('yyyy-MM-ddTHH:mm:ssZ') }}"

@@ -58,8 +58,8 @@ tasks:
     type: io.kestra.core.tasks.flows.Sequential
     tasks:
       - id: list_customers
-        type: io.kestra.plugin.shopify.customers.ListCustomers
-        storeDomain: "{{ vars.store_domain }}"
+        type: io.kestra.plugin.shopify.customers.List
+        storeDomain: my-store.myshopify.com
         accessToken: "{{ vars.access_token }}"
         fetchType: FETCH
         limit: 10

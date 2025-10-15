@@ -8,7 +8,7 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Product;
-import io.kestra.plugin.shopify.models.FetchType;
+import io.kestra.core.models.tasks.common.FetchType;
 import io.kestra.plugin.shopify.models.ProductStatus;
 import io.kestra.plugin.shopify.models.PublishedStatus;
 import io.swagger.v3.oas.annotations.media.Schema;

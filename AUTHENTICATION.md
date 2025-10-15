@@ -39,7 +39,7 @@ This guide walks you through setting up authentication for the Kestra Shopify pl
    - `write_orders` - Required for CreateOrder, DeleteOrder
 
    For **Customers**:
-   - `read_customers` - Required for ListCustomers, GetCustomer
+   - `read_customers` - Required for customers.List, GetCustomer
    - `write_customers` - Required for CreateCustomer, DeleteCustomer
 
    **Minimal Setup** (for testing):

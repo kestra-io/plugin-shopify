@@ -16,7 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @KestraTest
-class ListCustomersTest {
+class ListTest {
     @Inject
     private RunContextFactory runContextFactory;
 

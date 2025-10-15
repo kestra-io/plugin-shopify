@@ -11,7 +11,7 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Customer;
-import io.kestra.plugin.shopify.models.FetchType;
+import io.kestra.core.models.tasks.common.FetchType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
