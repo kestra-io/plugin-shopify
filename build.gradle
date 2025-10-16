@@ -5,9 +5,9 @@ plugins {
     id "idea"
     id 'jacoco'
     id "com.adarshr.test-logger" version "4.0.0"
-    id "com.gradleup.shadow" version "9.2.2"
+    id "com.gradleup.shadow" version "9.1.0"
     id 'signing'
-    id "com.github.ben-manes.versions" version "0.53.0"
+    id "com.github.ben-manes.versions" version "0.52.0"
     id 'net.researchgate.release' version '3.1.0'
 }
 
@@ -26,9 +26,6 @@ final targetJavaVersion = JavaVersion.VERSION_21
 java {
     sourceCompatibility = targetJavaVersion
     targetCompatibility = targetJavaVersion
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
 }
 
 group = "io.kestra.plugin"
@@ -51,12 +48,26 @@ dependencies {
     // kestra
     annotationProcessor group: "io.kestra", name: "processor", version: kestraVersion
     compileOnly group: "io.kestra", name: "core", version: kestraVersion
+    compileOnly group: "io.kestra", name: "script", version: kestraVersion
 }
 
 
 /**********************************************************************************************************************\
  * Test
  **********************************************************************************************************************/
+test {
+    useJUnitPlatform()
+}
+
+testlogger {
+    theme = "mocha-parallel"
+    showExceptions = true
+    showFullStackTraces = true
+    showStandardStreams = true
+    showPassedStandardStreams = false
+    showSkippedStandardStreams = true
+}
+
 dependencies {
     // Platform
     testAnnotationProcessor enforcedPlatform("io.kestra:platform:$kestraVersion")
@@ -85,39 +96,42 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.hamcrest:hamcrest"
     testImplementation "org.hamcrest:hamcrest-library"
-    
-    // allure reports
+}
+
+/**********************************************************************************************************************\
+ * Allure Reports
+ **********************************************************************************************************************/
+dependencies {
+    testImplementation enforcedPlatform("io.kestra:platform:$kestraVersion")
     testImplementation "io.qameta.allure:allure-junit5"
 }
 
 configurations {
-    testImplementation.extendsFrom annotationProcessor
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
 }
 
-/**********************************************************************************************************************\
- * Test
- **********************************************************************************************************************/
+dependencies {
+    agent "org.aspectj:aspectjweaver:1.9.24"
+}
+
 test {
-    useJUnitPlatform()
+    jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
 }
 
 /**********************************************************************************************************************\
  * Jacoco
  **********************************************************************************************************************/
-jacoco {
-    toolVersion = "0.8.11"
+test {
+    finalizedBy jacocoTestReport
 }
 
 jacocoTestReport {
     dependsOn test
-    reports {
-        xml.required = true
-        csv.required = true
-        html.required = true
-    }
 }
 
-test.finalizedBy jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
 
 jacocoTestCoverageVerification {
