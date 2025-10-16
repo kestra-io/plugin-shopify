@@ -5,6 +5,7 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.utils.TestsUtils;
 import io.kestra.core.models.property.Property;
+import io.kestra.core.models.tasks.common.FetchType;
 import io.kestra.plugin.shopify.models.Customer;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @KestraTest
 class ListTest {
@@ -51,16 +53,65 @@ class ListTest {
 
     @Test
     void testListCustomersRequiredFields() {
-        // Test task validation - storeDomain is required
+        // Test that storeDomain is required
+        assertThrows(Exception.class, () -> {
+            List task = List.builder()
+                .id("test-task")
+                .type(List.class.getName())
+                .accessToken(Property.of("test-token"))
+                .build();
+
+            RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
+            task.run(runContext);
+        });
+
+        // Test that accessToken is required
+        assertThrows(Exception.class, () -> {
+            List task = List.builder()
+                .id("test-task")
+                .type(List.class.getName())
+                .storeDomain(Property.of("test-store.myshopify.com"))
+                .build();
+
+            RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
+            task.run(runContext);
+        });
+    }
+
+    @Test
+    void testTaskConfiguration() {
+        // Test that task can be properly configured
         List task = List.builder()
             .id("test-task")
             .type(List.class.getName())
+            .storeDomain(Property.of("test-store.myshopify.com"))
+            .accessToken(Property.of("test-token"))
+            .limit(Property.of(10))
+            .fetchType(Property.of(FetchType.FETCH))
             .build();
 
-        RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
-        
-        org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
-            task.run(runContext);
-        });
+        assertThat(task.getStoreDomain(), notNullValue());
+        assertThat(task.getAccessToken(), notNullValue());
+        assertThat(task.getLimit(), notNullValue());
+        assertThat(task.getFetchType(), notNullValue());
+    }
+
+    @Test
+    void testFetchTypeConfiguration() {
+        // Test FetchType property configuration
+        List task1 = List.builder()
+            .storeDomain(Property.of("test-store.myshopify.com"))
+            .accessToken(Property.of("test-token"))
+            .fetchType(Property.of(FetchType.FETCH))
+            .build();
+
+        List task2 = List.builder()
+            .storeDomain(Property.of("test-store.myshopify.com"))
+            .accessToken(Property.of("test-token"))
+            .fetchType(Property.of(FetchType.STORE))
+            .build();
+
+        assertNotNull(task1.getFetchType());
+        assertNotNull(task2.getFetchType());
     }
 }
