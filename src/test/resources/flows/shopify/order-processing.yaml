@@ -1,0 +1,52 @@
+id: shopify_order_processing
+namespace: examples.shopify
+
+description: |
+  Order processing workflow for Shopify:
+  1. List recent orders
+  2. Process each paid order
+  3. Generate order report
+
+variables:
+  store_domain: "{{ secret('SHOPIFY_STORE_DOMAIN') }}"
+  access_token: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+
+tasks:
+  - id: list_recent_orders
+    type: io.kestra.plugin.shopify.orders.ListOrders
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    limit: 20
+    status: open
+    createdAtMin: "{{ now() | dateAdd(-7, 'DAYS') | dateFormat('yyyy-MM-ddTHH:mm:ssZ') }}"
+
+  - id: filter_paid_orders
+    type: io.kestra.core.tasks.flows.ForEach
+    value: "{{ outputs.list_recent_orders.orders }}"
+    tasks:
+      - id: process_paid_order
+        type: io.kestra.core.tasks.flows.If
+        condition: "{{ taskrun.value.financialStatus == 'paid' }}"
+        then:
+          - id: get_order_details
+            type: io.kestra.plugin.shopify.orders.GetOrder
+            storeDomain: "{{ vars.store_domain }}"
+            accessToken: "{{ vars.access_token }}"
+            orderId: "{{ taskrun.value.id }}"
+
+          - id: log_order_processing
+            type: io.kestra.core.tasks.log.Log
+            message: |
+              Processing paid order:
+              - Order: {{ taskrun.value.name }}
+              - Customer: {{ taskrun.value.customer.email }}
+              - Total: {{ taskrun.value.totalPrice }} {{ taskrun.value.currency }}
+              - Items: {{ taskrun.value.lineItems | length }}
+
+  - id: generate_order_summary
+    type: io.kestra.core.tasks.log.Log
+    message: |
+      Order Processing Summary:
+      - Total orders retrieved: {{ outputs.list_recent_orders.count }}
+      - Orders processed: {{ outputs.filter_paid_orders.numberOfExecutedTasks }}
+      - Date range: Last 7 days

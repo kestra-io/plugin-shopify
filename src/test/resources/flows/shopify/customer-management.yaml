@@ -1,0 +1,66 @@
+id: shopify_customer_management
+namespace: examples.shopify
+
+description: |
+  Customer management workflow for Shopify:
+  1. List recent customers
+  2. Create a new customer
+  3. Update customer information
+  4. Get customer details
+
+variables:
+  store_domain: "{{ secret('SHOPIFY_STORE_DOMAIN') }}"
+  access_token: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+
+tasks:
+  - id: list_recent_customers
+    type: io.kestra.plugin.shopify.customers.List
+    storeDomain: my-store.myshopify.com
+    accessToken: "{{ vars.access_token }}"
+    limit: 10
+    createdAtMin: "{{ now() | dateAdd(-30, 'DAYS') | date('yyyy-MM-ddTHH:mm:ssZ') }}"
+
+  - id: create_demo_customer
+    type: io.kestra.plugin.shopify.customers.CreateCustomer
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    email: "demo-customer-{{ now() | date('yyyyMMdd-HHmmss') }}@example.com"
+    firstName: "Kestra"
+    lastName: "Demo"
+    acceptsMarketing: true
+    tags: "demo,kestra,automation"
+    note: "Customer created via Kestra workflow automation"
+    addresses:
+      - firstName: "Kestra"
+        lastName: "Demo"
+        company: "Kestra Inc"
+        address1: "123 Automation Street"
+        city: "Workflow City"
+        province: "CA"
+        country: "United States"
+        zip: "12345"
+        phone: "+1-555-KESTRA"
+        countryCode: "US"
+        provinceCode: "CA"
+        defaultAddress: true
+
+  - id: get_customer_details
+    type: io.kestra.plugin.shopify.customers.GetCustomer
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    customerId: "{{ outputs.create_demo_customer.customer.id }}"
+
+  - id: cleanup_demo_customer
+    type: io.kestra.plugin.shopify.customers.DeleteCustomer
+    storeDomain: "{{ vars.store_domain }}"
+    accessToken: "{{ vars.access_token }}"
+    customerId: "{{ outputs.create_demo_customer.customer.id }}"
+
+  - id: log_results
+    type: io.kestra.core.tasks.log.Log
+    message: |
+      Customer workflow completed:
+      - Listed {{ outputs.list_recent_customers.count }} recent customers
+      - Created demo customer: {{ outputs.create_demo_customer.customer.email }} (ID: {{ outputs.create_demo_customer.customer.id }})
+      - Customer has {{ outputs.get_customer_details.customer.addresses | length }} address(es)
+      - Demo customer cleaned up: {{ outputs.cleanup_demo_customer.deleted }}
