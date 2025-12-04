@@ -1,8 +1,8 @@
 group: io.kestra.plugin.shopify
 name: "shopify"
 title: "Shopify"
-description: "This sub-group of tasks enables integration with Shopify Admin API, allowing you to manage products, orders, customers, and set up triggers for Shopify events."
-body: ""
+description: "Tasks that call the Shopify Admin API to manage products, orders, and customers."
+body: "Set your store domain and Admin API access token (with API version and optional rate-limit delay) to list, create, update, or delete Shopify resources, and wire the responses into downstream fulfillment or analytics flows."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"
