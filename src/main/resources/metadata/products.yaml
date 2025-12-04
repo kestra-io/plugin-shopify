@@ -1,8 +1,8 @@
 group: io.kestra.plugin.shopify.products
 name: "products"
 title: "Shopify Order"
-description: "This sub-group of plugins contains tasks to interact with Shopify Products."
-body: ""
+description: "Tasks that list or update Shopify products."
+body: "Authenticate with your store domain and Admin API token to list products with filters (status, publication) or update product fields, using the API version and delay settings to stay within Shopify limits."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"

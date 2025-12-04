@@ -1,8 +1,8 @@
 group: io.kestra.plugin.shopify.orders
 name: "orders"
 title: "Shopify Order"
-description: "This sub-group of plugins contains tasks to interact with Shopify Orders."
-body: ""
+description: "Tasks that list or delete orders from Shopify."
+body: "Use the store domain and Admin API token to page through orders or remove them by ID, applying filters such as status or fulfillment state while respecting API versioning and rate limits."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"
