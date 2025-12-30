@@ -1,7 +1,7 @@
 @PluginSubGroup(
     title = "Shopify Order",
     description = "This sub-group of plugins contains tasks to interact with Shopify Products.",
-    categories = { PluginSubGroup.PluginCategory.TOOL }
+        categories = { PluginSubGroup.PluginCategory.BUSINESS }
 )
 package io.kestra.plugin.shopify.products;
 
