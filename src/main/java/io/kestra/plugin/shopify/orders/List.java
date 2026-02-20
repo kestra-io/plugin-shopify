@@ -33,14 +33,14 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "List orders from Shopify store",
-    description = "Retrieve a list of orders from your Shopify store with optional filtering and pagination."
+    title = "List Shopify orders",
+    description = "Retrieves orders through the Shopify Admin API with optional filters (status, financial, fulfillment, date ranges). Supports fetch modes: FETCH (default), FETCH_ONE (first only), STORE (stream to storage URI). Limit honors Shopify cap."
 )
-@Plugin(
-    examples = {
-        @Example(
-            title = "List all orders",
-            full = true,
+    @Plugin(
+        examples = {
+            @Example(
+                title = "List all orders",
+                full = true,
             code = """
                 id: shopify_list_orders
                 namespace: company.team
@@ -51,8 +51,8 @@ import java.util.stream.Collectors;
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                 """
-        ),
-        @Example(
+            ),
+            @Example(
             title = "List orders with filtering",
             full = true,
             code = """
@@ -68,6 +68,22 @@ import java.util.stream.Collectors;
                     status: "any"
                     financialStatus: "paid"
                 """
+        ),
+        @Example(
+            title = "Stream orders to storage",
+            full = true,
+            code = """
+                id: shopify_list_orders_store
+                namespace: company.team
+                
+                tasks:
+                  - id: list_orders
+                    type: io.kestra.plugin.shopify.orders.List
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                    fetchType: STORE
+                    limit: 200
+                """
         )
     }
 )
@@ -75,62 +91,62 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
     @Schema(
         title = "Fetch type",
-        description = "How to fetch the data (FETCH_ONE, FETCH, STORE)"
+        description = "Controls result handling: FETCH (default), FETCH_ONE, or STORE"
     )
     @Builder.Default
     private Property<FetchType> fetchType = Property.of(FetchType.FETCH);
 
     @Schema(
         title = "Limit",
-        description = "Maximum number of orders to retrieve"
+        description = "Maximum number of orders to retrieve (1-250)"
     )
     private Property<Integer> limit;
 
     @Schema(
         title = "Since ID",
-        description = "Retrieve orders after this ID"
+        description = "Retrieve orders created after this Shopify order ID"
     )
     private Property<Long> sinceId;
 
     @Schema(
         title = "Status filter",
-        description = "Filter orders by status (open, closed, cancelled, any)"
+        description = "Order status filter: open, closed, cancelled, or any"
     )
     private Property<String> status;
 
     @Schema(
         title = "Financial status filter", 
-        description = "Filter orders by financial status"
+        description = "Financial status filter (e.g., paid, pending, refunded)"
     )
     private Property<String> financialStatus;
 
     @Schema(
         title = "Fulfillment status filter",
-        description = "Filter orders by fulfillment status"
+        description = "Fulfillment status filter (e.g., shipped, partial, unshipped)"
     )
     private Property<String> fulfillmentStatus;
 
     @Schema(
         title = "Created at min",
-        description = "Retrieve orders created after this date"
+        description = "Return orders created at or after this ISO-8601 timestamp"
     )
     private Property<String> createdAtMin;
 
     @Schema(
         title = "Created at max",
-        description = "Retrieve orders created before this date"
+        description = "Return orders created at or before this ISO-8601 timestamp"
     )
     private Property<String> createdAtMax;
 
     @Schema(
         title = "Updated at min",
-        description = "Retrieve orders updated after this date"
+        description = "Return orders updated at or after this ISO-8601 timestamp"
     )
     private Property<String> updatedAtMin;
 
     @Schema(
         title = "Updated at max", 
-        description = "Retrieve orders updated before this date"
+        description = "Return orders updated at or before this ISO-8601 timestamp"
     )
     private Property<String> updatedAtMax;
 
@@ -225,19 +241,19 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Orders",
-            description = "List of orders retrieved from Shopify. Only populated if using fetchType=FETCH or FETCH_ONE."
+            description = "Orders retrieved when fetchType is FETCH or FETCH_ONE"
         )
         private final java.util.List<Order> orders;
         
         @Schema(
             title = "Count",
-            description = "Number of orders retrieved"
+            description = "Number of orders returned or written"
         )
         private final Integer count;
         
         @Schema(
             title = "URI",
-            description = "URI of the stored data. Only populated if using fetchType=STORE."
+            description = "Storage URI written when fetchType is STORE"
         )
         private final URI uri;
     }

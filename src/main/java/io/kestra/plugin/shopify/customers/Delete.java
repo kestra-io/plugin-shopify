@@ -23,8 +23,8 @@ import java.net.URI;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Delete a customer from Shopify store",
-    description = "Delete a customer by their ID."
+    title = "Delete Shopify customer by ID",
+    description = "Deletes a customer via the Shopify Admin API using the store domain and access token. Operation is idempotent; Shopify ignores missing IDs."
 )
 @Plugin(
     examples = {
@@ -49,7 +49,7 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<VoidOutp
 
     @Schema(
         title = "Customer ID",
-        description = "The ID of the customer to delete"
+        description = "Shopify customer ID to delete"
     )
     @NotNull
     private Property<Long> customerId;

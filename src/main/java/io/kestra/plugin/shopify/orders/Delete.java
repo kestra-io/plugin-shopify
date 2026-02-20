@@ -24,8 +24,8 @@ import java.net.URI;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Delete an order from Shopify store",
-    description = "Permanently delete an order from your Shopify store. Note: This action cannot be undone."
+    title = "Delete Shopify order by ID",
+    description = "Deletes an order via the Shopify Admin API using store domain and access token. Operation is irreversible; Shopify returns HTTP 200 with empty body on success."
 )
 @Plugin(
     examples = {
@@ -50,7 +50,7 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
 
     @Schema(
         title = "Order ID",
-        description = "The ID of the order to delete"
+        description = "Shopify order ID to delete"
     )
     @NotNull
     private Property<Long> orderId;
@@ -90,13 +90,13 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
         title = "Deleted order ID",
-        description = "The ID of the order that was deleted"
+        description = "Order ID passed to the delete request"
         )
         private final Long orderId;
 
         @Schema(
         title = "Deletion status",
-        description = "Whether the order was successfully deleted"
+        description = "True when Shopify responded 200 to the delete call"
         )
         private final Boolean deleted;
     }

@@ -25,8 +25,8 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Get a specific customer from Shopify store",
-    description = "Retrieve a customer by their ID."
+    title = "Fetch Shopify customer by ID",
+    description = "Retrieves a customer through the Shopify Admin API using the store domain and access token. Throws an error if the ID is not found."
 )
 @Plugin(
     examples = {
@@ -51,7 +51,7 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
 
     @Schema(
         title = "Customer ID",
-        description = "The ID of the customer to retrieve"
+        description = "Shopify customer ID to retrieve"
     )
     @NotNull
     private Property<Long> customerId;
@@ -93,7 +93,7 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Retrieved customer",
-            description = "The customer retrieved from Shopify"
+            description = "Customer object returned by Shopify"
         )
         private final Customer customer;
     }

@@ -26,13 +26,13 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Update an existing product in Shopify store",
-    description = "Update an existing product with new details."
+    title = "Update Shopify product fields",
+    description = "Updates a product via the Shopify Admin API. Only provided fields are patched; at least one field is required. Expects store domain, access token, and product ID."
 )
-@Plugin(
-    examples = {
-        @Example(
-        title = "Update product title and price",
+    @Plugin(
+        examples = {
+            @Example(
+        title = "Update product title and status",
         full = true,
         code = """
                 id: shopify_update_product
@@ -55,73 +55,73 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
 
     @Schema(
         title = "Product ID",
-        description = "The ID of the product to update"
+        description = "Shopify product ID to update (required)"
     )
     private Property<Long> productId;
 
     @Schema(
         title = "Product title",
-        description = "The title of the product"
+        description = "New product title"
     )
     private Property<String> title;
 
     @Schema(
         title = "Product description HTML",
-        description = "The description of the product in HTML format"
+        description = "HTML body for the product description"
     )
     private Property<String> bodyHtml;
 
     @Schema(
         title = "Vendor",
-        description = "The vendor of the product"
+        description = "Vendor name"
     )
     private Property<String> vendor;
 
     @Schema(
         title = "Product type",
-        description = "The product type"
+        description = "Product type string"
     )
     private Property<String> productType;
 
     @Schema(
         title = "Tags",
-        description = "Comma-separated list of tags"
+        description = "Comma-separated tags"
     )
     private Property<String> tags;
 
     @Schema(
         title = "Status",
-        description = "The status of the product (active, archived, draft)"
+        description = "Product status: active, archived, or draft"
     )
     private Property<String> status;
 
     @Schema(
         title = "Handle",
-        description = "A unique URL handle for the product"
+        description = "Unique URL handle for the product"
     )
     private Property<String> handle;
 
     @Schema(
         title = "Template suffix",
-        description = "The suffix of the Liquid template used for the product page"
+        description = "Liquid template suffix used for the product page"
     )
     private Property<String> templateSuffix;
 
     @Schema(
         title = "Published scope",
-        description = "The scope where the product is published (web, global)"
+        description = "Publish scope (web or global)"
     )
     private Property<String> publishedScope;
 
     @Schema(
         title = "SEO title",
-        description = "The SEO title for the product"
+        description = "SEO title to set in Shopify"
     )
     private Property<String> seoTitle;
 
     @Schema(
         title = "SEO description",
-        description = "The SEO description for the product"
+        description = "SEO meta description"
     )
     private Property<String> seoDescription;
 
@@ -258,7 +258,7 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
         title = "Updated product",
-        description = "The product that was updated in Shopify"
+        description = "Product object returned after the update"
         )
         private final Product product;
     }
