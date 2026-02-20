@@ -30,14 +30,14 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "List products from Shopify store",
-    description = "Retrieve a list of products from your Shopify store with optional filtering and pagination."
+    title = "List Shopify products",
+    description = "Retrieves products via the Shopify Admin API with optional filters (status, published state, vendor, type, date ranges). Supports fetch modes: FETCH (default), FETCH_ONE (first only), or STORE (stream to storage URI). Limit honors Shopify cap."
 )
-@Plugin(
-    examples = {
-        @Example(
-            title = "List all products",
-            full = true,
+    @Plugin(
+        examples = {
+            @Example(
+                title = "List all products",
+                full = true,
             code = """
                 id: shopify_list_products
                 namespace: company.team
@@ -48,8 +48,8 @@ import java.util.stream.Collectors;
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                 """
-        ),
-        @Example(
+            ),
+            @Example(
             title = "List products with filtering",
             full = true,
             code = """
@@ -65,6 +65,22 @@ import java.util.stream.Collectors;
                     status: ACTIVE
                     publishedStatus: PUBLISHED
                 """
+        ),
+        @Example(
+            title = "Stream products to storage",
+            full = true,
+            code = """
+                id: shopify_list_products_store
+                namespace: company.team
+                
+                tasks:
+                  - id: list_products
+                    type: io.kestra.plugin.shopify.products.List
+                    storeDomain: my-store.myshopify.com
+                    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                    fetchType: STORE
+                    limit: 200
+                """
         )
     }
 )
@@ -72,38 +88,38 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
     @Schema(
         title = "Fetch type",
-        description = "How to fetch the data (FETCH_ONE, FETCH, STORE)"
+        description = "Controls result handling: FETCH (default), FETCH_ONE, or STORE"
     )
     @Builder.Default
     private Property<FetchType> fetchType = Property.of(FetchType.FETCH);
 
     @Schema(
         title = "Limit",
-        description = "Maximum number of products to retrieve"
+        description = "Maximum number of products to retrieve (1-250)"
     )
     private Property<Integer> limit;
 
     @Schema(
         title = "Since ID", 
-        description = "Retrieve products after this ID"
+        description = "Retrieve products created after this Shopify product ID"
     )
     private Property<Long> sinceId;
 
     @Schema(
         title = "Product status filter",
-        description = "Filter products by status"
+        description = "Product status filter: active, archived, or draft"
     )
     private Property<ProductStatus> status;
 
     @Schema(
         title = "Published status filter",
-        description = "Filter by published status"
+        description = "Published state filter: published, unpublished, or any"
     )
     private Property<PublishedStatus> publishedStatus;
 
     @Schema(
         title = "Product type filter",
-        description = "Filter products by product type"
+        description = "Filter products by product type string"
     )
     private Property<String> productType;
 
@@ -115,31 +131,31 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
     @Schema(
         title = "Handle filter",
-        description = "Filter products by handle"
+        description = "Filter products by product handle"
     )
     private Property<String> handle;
 
     @Schema(
         title = "Created at min",
-        description = "Retrieve products created after this date"
+        description = "Return products created at or after this ISO-8601 timestamp"
     )
     private Property<String> createdAtMin;
 
     @Schema(
         title = "Created at max",
-        description = "Retrieve products created before this date"
+        description = "Return products created at or before this ISO-8601 timestamp"
     )
     private Property<String> createdAtMax;
 
     @Schema(
         title = "Updated at min",
-        description = "Retrieve products updated after this date"
+        description = "Return products updated at or after this ISO-8601 timestamp"
     )
     private Property<String> updatedAtMin;
 
     @Schema(
         title = "Updated at max",
-        description = "Retrieve products updated before this date"
+        description = "Return products updated at or before this ISO-8601 timestamp"
     )
     private Property<String> updatedAtMax;
 
@@ -244,19 +260,19 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Products",
-            description = "List of products retrieved from Shopify. Only populated if using fetchType=FETCH or FETCH_ONE."
+            description = "Products retrieved when fetchType is FETCH or FETCH_ONE"
         )
         private final java.util.List<Product> products;
         
         @Schema(
             title = "Count",
-            description = "Number of products retrieved"
+            description = "Number of products returned or written"
         )
         private final Integer count;
         
         @Schema(
             title = "URI",
-            description = "URI of the stored data. Only populated if using fetchType=STORE."
+            description = "Storage URI written when fetchType is STORE"
         )
         private final URI uri;
     }

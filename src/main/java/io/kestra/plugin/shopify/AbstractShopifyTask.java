@@ -29,28 +29,28 @@ public abstract class AbstractShopifyTask extends Task {
     
     @Schema(
         title = "Shopify store domain",
-        description = "The domain of your Shopify store (e.g., 'my-store.myshopify.com')"
+        description = "Store domain used for Admin API calls (e.g., my-store.myshopify.com)"
     )
     @NotNull
     protected Property<String> storeDomain;
 
     @Schema(
         title = "Admin API access token",
-        description = "Private app access token for Shopify Admin API"
+        description = "Private app Admin API access token sent as X-Shopify-Access-Token"
     )
     @NotNull
     protected Property<String> accessToken;
 
     @Schema(
         title = "API version",
-        description = "Shopify Admin API version to use"
+        description = "Shopify Admin API version path segment; defaults to 2024-10"
     )
     @Builder.Default
     protected Property<String> apiVersion = Property.of("2024-10");
 
     @Schema(
         title = "Rate limit delay",
-        description = "Delay between API calls to respect rate limits"
+        description = "Sleep between API calls to respect Shopify rate limits; default 500ms"
     )
     @Builder.Default
     protected Property<Duration> rateLimitDelay = Property.of(Duration.ofMillis(500));

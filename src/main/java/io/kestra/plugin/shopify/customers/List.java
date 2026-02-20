@@ -28,14 +28,14 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "List customers from Shopify store",
-    description = "Retrieve a list of customers from your Shopify store with optional filtering and pagination."
+    title = "List Shopify customers",
+    description = "Retrieves customers from the Shopify Admin API. Supports limit up to 250 and fetch modes: FETCH (all), FETCH_ONE (first only), or STORE (stream to storage URI)."
 )
-@Plugin(
-    examples = {
-        @Example(
-            title = "List all customers",
-            full = true,
+    @Plugin(
+        examples = {
+            @Example(
+                title = "List all customers",
+                full = true,
             code = """
                 id: shopify_list_customers
                 namespace: company.team
@@ -46,14 +46,30 @@ import java.util.stream.Collectors;
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                 """
-        )
-    }
-)
+            ),
+            @Example(
+                title = "Store customers to internal storage",
+                full = true,
+                code = """
+                    id: shopify_list_customers_store
+                    namespace: company.team
+                    
+                    tasks:
+                      - id: list_customers
+                        type: io.kestra.plugin.shopify.customers.List
+                        storeDomain: my-store.myshopify.com
+                        accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
+                        fetchType: STORE
+                        limit: 250
+                    """
+            )
+        }
+    )
 public class List extends AbstractShopifyTask implements RunnableTask<List.Output> {
     
     @Schema(
         title = "Fetch type",
-        description = "How to fetch the customers"
+        description = "Controls result handling: FETCH (default), FETCH_ONE, or STORE"
     )
     @Builder.Default
     @NotNull
@@ -61,7 +77,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     
     @Schema(
         title = "Customer limit",
-        description = "Maximum number of customers to return (1-250)"
+        description = "Maximum customers to return (1-250). Shopify caps at 250."
     )
     protected Property<Integer> limit;
 
@@ -122,19 +138,19 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Customers",
-            description = "List of customers retrieved from Shopify. Only populated if using fetchType=FETCH or FETCH_ONE."
+            description = "Customers retrieved when fetchType is FETCH or FETCH_ONE"
         )
         private final java.util.List<Customer> customers;
         
         @Schema(
             title = "Count",
-            description = "Number of customers retrieved"
+            description = "Number of customers returned or written"
         )
         private final Integer count;
         
         @Schema(
             title = "URI",
-            description = "URI of the stored data. Only populated if using fetchType=STORE."
+            description = "Storage URI written when fetchType is STORE"
         )
         private final URI uri;
     }

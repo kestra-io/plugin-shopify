@@ -26,8 +26,8 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Create customer in Shopify store",
-    description = "Create a new customer in your Shopify store."
+    title = "Create Shopify customer record",
+    description = "Creates a customer through the Shopify Admin API using the provided store domain and access token. Email is required; name and phone fields are optional."
 )
 @Plugin(
     examples = {
@@ -54,26 +54,26 @@ public class Create extends AbstractShopifyTask implements RunnableTask<Create.O
     
     @Schema(
         title = "Customer email",
-        description = "Email address for the customer"
+        description = "Email address for the new customer (required)"
     )
     @NotNull
     protected Property<String> email;
     
     @Schema(
         title = "First name",
-        description = "Customer's first name"
+        description = "Optional given name for the customer"
     )
     protected Property<String> firstName;
     
     @Schema(
         title = "Last name",
-        description = "Customer's last name" 
+        description = "Optional family name for the customer" 
     )
     protected Property<String> lastName;
     
     @Schema(
         title = "Phone number",
-        description = "Customer's phone number"
+        description = "Optional phone number sent to Shopify"
     )
     protected Property<String> phone;
 
@@ -118,7 +118,7 @@ public class Create extends AbstractShopifyTask implements RunnableTask<Create.O
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "Created customer",
-            description = "The customer that was created in Shopify"
+            description = "Customer object returned by Shopify for the created record"
         )
         private final Customer customer;
     }
