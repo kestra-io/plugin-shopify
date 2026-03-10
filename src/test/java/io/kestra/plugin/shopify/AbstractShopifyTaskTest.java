@@ -27,9 +27,9 @@ class AbstractShopifyTaskTest {
         Get task = Get.builder()
             .id("test-task")
             .type(Get.class.getName())
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .customerId(Property.of(123L))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .customerId(Property.ofValue(123L))
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -47,9 +47,9 @@ class AbstractShopifyTaskTest {
     @Test
     void testPropertyRendering() throws Exception {
         Get task = Get.builder()
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .customerId(Property.of(123L))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .customerId(Property.ofValue(123L))
             .build();
 
         // Test property getters execute
