@@ -1,14 +1,16 @@
 package io.kestra.plugin.shopify.customers;
 
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
 import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.utils.TestsUtils;
-import io.kestra.core.models.property.Property;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -22,7 +24,8 @@ class CreateTest {
     @Test
     void testCreateCustomerRequiredFields() {
         // Test that storeDomain is required
-        assertThrows(Exception.class, () -> {
+        assertThrows(Exception.class, () ->
+        {
             Create task = Create.builder()
                 .id("test-task")
                 .type(Create.class.getName())
@@ -35,7 +38,8 @@ class CreateTest {
         });
 
         // Test that accessToken is required
-        assertThrows(Exception.class, () -> {
+        assertThrows(Exception.class, () ->
+        {
             Create task = Create.builder()
                 .id("test-task")
                 .type(Create.class.getName())
@@ -48,7 +52,8 @@ class CreateTest {
         });
 
         // Test that email is required
-        assertThrows(Exception.class, () -> {
+        assertThrows(Exception.class, () ->
+        {
             Create task = Create.builder()
                 .id("test-task")
                 .type(Create.class.getName())

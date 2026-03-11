@@ -10,10 +10,10 @@ class ProductStatusTest {
     @Test
     void testProductStatusValues() {
         ProductStatus[] values = ProductStatus.values();
-        
+
         assertThat(values, notNullValue());
         assertThat(values.length, greaterThan(0));
-        
+
         // Test specific values exist
         assertThat(ProductStatus.valueOf("ACTIVE"), equalTo(ProductStatus.ACTIVE));
         assertThat(ProductStatus.valueOf("ARCHIVED"), equalTo(ProductStatus.ARCHIVED));
@@ -33,10 +33,10 @@ class PublishedStatusTest {
     @Test
     void testPublishedStatusValues() {
         PublishedStatus[] values = PublishedStatus.values();
-        
+
         assertThat(values, notNullValue());
         assertThat(values.length, greaterThan(0));
-        
+
         // Test specific values exist
         assertThat(PublishedStatus.valueOf("PUBLISHED"), equalTo(PublishedStatus.PUBLISHED));
         assertThat(PublishedStatus.valueOf("UNPUBLISHED"), equalTo(PublishedStatus.UNPUBLISHED));

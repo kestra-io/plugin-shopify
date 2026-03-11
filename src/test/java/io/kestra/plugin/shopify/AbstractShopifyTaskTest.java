@@ -1,16 +1,17 @@
 package io.kestra.plugin.shopify;
 
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
 import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.utils.TestsUtils;
-import io.kestra.core.models.property.Property;
 import io.kestra.plugin.shopify.customers.Get;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-import java.util.Map;
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -33,7 +34,7 @@ class AbstractShopifyTaskTest {
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
-        
+
         // Test URI building functionality
         try {
             // This will execute some code in the abstract class
@@ -56,7 +57,7 @@ class AbstractShopifyTaskTest {
         assertThat(task.getStoreDomain(), notNullValue());
         assertThat(task.getAccessToken(), notNullValue());
         assertThat(task.getCustomerId(), notNullValue());
-        
+
         // Verify the values
         assertThat(task.getStoreDomain().toString(), containsString("test-store.myshopify.com"));
         assertThat(task.getAccessToken().toString(), containsString("test-token"));

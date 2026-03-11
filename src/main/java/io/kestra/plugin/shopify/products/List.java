@@ -1,28 +1,27 @@
 package io.kestra.plugin.shopify.products;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Map;
+
+import io.kestra.core.http.HttpRequest;
+import io.kestra.core.http.HttpResponse;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
+import io.kestra.core.models.tasks.common.FetchType;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Product;
-import io.kestra.core.models.tasks.common.FetchType;
 import io.kestra.plugin.shopify.models.ProductStatus;
 import io.kestra.plugin.shopify.models.PublishedStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.net.URI;
-import io.kestra.core.http.client.HttpClient;
-import io.kestra.core.http.HttpRequest;
-import io.kestra.core.http.HttpResponse;
-import java.util.ArrayList;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @SuperBuilder
 @ToString
@@ -33,29 +32,29 @@ import java.util.stream.Collectors;
     title = "List Shopify products",
     description = "Retrieves products via the Shopify Admin API with optional filters (status, published state, vendor, type, date ranges). Supports fetch modes: FETCH (default), FETCH_ONE (first only), or STORE (stream to storage URI). Limit honors Shopify cap."
 )
-    @Plugin(
-        examples = {
-            @Example(
-                title = "List all products",
-                full = true,
+@Plugin(
+    examples = {
+        @Example(
+            title = "List all products",
+            full = true,
             code = """
                 id: shopify_list_products
                 namespace: company.team
-                
+
                 tasks:
                   - id: list_products
                     type: io.kestra.plugin.shopify.products.List
                     storeDomain: my-store.myshopify.com
                     accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
                 """
-            ),
-            @Example(
+        ),
+        @Example(
             title = "List products with filtering",
             full = true,
             code = """
                 id: shopify_list_products_filtered
                 namespace: company.team
-                
+
                 tasks:
                   - id: list_products
                     type: io.kestra.plugin.shopify.products.List
@@ -72,7 +71,7 @@ import java.util.stream.Collectors;
             code = """
                 id: shopify_list_products_store
                 namespace: company.team
-                
+
                 tasks:
                   - id: list_products
                     type: io.kestra.plugin.shopify.products.List
@@ -100,7 +99,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     private Property<Integer> limit;
 
     @Schema(
-        title = "Since ID", 
+        title = "Since ID",
         description = "Retrieve products created after this Shopify product ID"
     )
     private Property<Long> sinceId;
@@ -162,68 +161,58 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     @Override
     public Output run(RunContext runContext) throws Exception {
         try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
-        
-        // Build query parameters
-        java.util.List<String> queryParams = new ArrayList<>();
-        
-        runContext.render(limit).as(Integer.class).ifPresent(rLimit -> 
-            queryParams.add("limit=" + rLimit));
-        
-        runContext.render(sinceId).as(Long.class).ifPresent(rSinceId -> 
-            queryParams.add("since_id=" + rSinceId));
-        
-        runContext.render(status).as(ProductStatus.class).ifPresent(rStatus -> 
-            queryParams.add("status=" + rStatus.name().toLowerCase()));
-        
-        runContext.render(publishedStatus).as(PublishedStatus.class).ifPresent(rPublished -> 
-            queryParams.add("published_status=" + rPublished.name().toLowerCase()));
-        
-        if (productType != null) {
-            String rProductType = runContext.render(productType).as(String.class).orElse(null);
-            if (rProductType != null) {
-                queryParams.add("product_type=" + rProductType);
+
+            // Build query parameters
+            java.util.List<String> queryParams = new ArrayList<>();
+
+            runContext.render(limit).as(Integer.class).ifPresent(rLimit -> queryParams.add("limit=" + rLimit));
+
+            runContext.render(sinceId).as(Long.class).ifPresent(rSinceId -> queryParams.add("since_id=" + rSinceId));
+
+            runContext.render(status).as(ProductStatus.class).ifPresent(rStatus -> queryParams.add("status=" + rStatus.name().toLowerCase()));
+
+            runContext.render(publishedStatus).as(PublishedStatus.class).ifPresent(rPublished -> queryParams.add("published_status=" + rPublished.name().toLowerCase()));
+
+            if (productType != null) {
+                String rProductType = runContext.render(productType).as(String.class).orElse(null);
+                if (rProductType != null) {
+                    queryParams.add("product_type=" + rProductType);
+                }
             }
-        }
-        
-        runContext.render(vendor).as(String.class).ifPresent(rVendor -> 
-            queryParams.add("vendor=" + rVendor));
-        
-        runContext.render(handle).as(String.class).ifPresent(rHandle -> 
-            queryParams.add("handle=" + rHandle));
-        
-        runContext.render(createdAtMin).as(String.class).ifPresent(rCreatedAtMin -> 
-            queryParams.add("created_at_min=" + rCreatedAtMin));
-        
-        runContext.render(createdAtMax).as(String.class).ifPresent(rCreatedAtMax -> 
-            queryParams.add("created_at_max=" + rCreatedAtMax));
-        
-        runContext.render(updatedAtMin).as(String.class).ifPresent(rUpdatedAtMin -> 
-            queryParams.add("updated_at_min=" + rUpdatedAtMin));
-        
-        runContext.render(updatedAtMax).as(String.class).ifPresent(rUpdatedAtMax -> 
-            queryParams.add("updated_at_max=" + rUpdatedAtMax));
 
-        String path = "/products.json";
-        if (!queryParams.isEmpty()) {
-            path += "?" + String.join("&", queryParams);
-        }
+            runContext.render(vendor).as(String.class).ifPresent(rVendor -> queryParams.add("vendor=" + rVendor));
 
-        URI uri = buildApiUrl(runContext, path);
-        HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
+            runContext.render(handle).as(String.class).ifPresent(rHandle -> queryParams.add("handle=" + rHandle));
 
-        runContext.logger().debug("Listing products from Shopify API: {}", uri);
-        
+            runContext.render(createdAtMin).as(String.class).ifPresent(rCreatedAtMin -> queryParams.add("created_at_min=" + rCreatedAtMin));
+
+            runContext.render(createdAtMax).as(String.class).ifPresent(rCreatedAtMax -> queryParams.add("created_at_max=" + rCreatedAtMax));
+
+            runContext.render(updatedAtMin).as(String.class).ifPresent(rUpdatedAtMin -> queryParams.add("updated_at_min=" + rUpdatedAtMin));
+
+            runContext.render(updatedAtMax).as(String.class).ifPresent(rUpdatedAtMax -> queryParams.add("updated_at_max=" + rUpdatedAtMax));
+
+            String path = "/products.json";
+            if (!queryParams.isEmpty()) {
+                path += "?" + String.join("&", queryParams);
+            }
+
+            URI uri = buildApiUrl(runContext, path);
+            HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
+
+            runContext.logger().debug("Listing products from Shopify API: {}", uri);
+
             handleRateLimit(runContext);
             HttpResponse<String> response = client.request(request, String.class);
             Map<String, Object> responseData = parseResponse(response);
-        
+
             @SuppressWarnings("unchecked")
             java.util.List<Map<String, Object>> productsData = (java.util.List<Map<String, Object>>) responseData.get("products");
-            
+
             if (productsData == null) {
                 productsData = new ArrayList<>();
             }
-            
+
             java.util.List<Product> products = productsData.stream()
                 .map(productData -> JacksonMapper.ofJson().convertValue(productData, Product.class))
                 .toList();
@@ -232,7 +221,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
 
             // Handle fetchType properly according to maintainer feedback
             FetchType rFetchType = runContext.render(fetchType).as(FetchType.class).orElse(FetchType.FETCH);
-            
+
             switch (rFetchType) {
                 case FETCH_ONE:
                     if (products.isEmpty()) {
@@ -263,13 +252,13 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
             description = "Products retrieved when fetchType is FETCH or FETCH_ONE"
         )
         private final java.util.List<Product> products;
-        
+
         @Schema(
             title = "Count",
             description = "Number of products returned or written"
         )
         private final Integer count;
-        
+
         @Schema(
             title = "URI",
             description = "Storage URI written when fetchType is STORE"

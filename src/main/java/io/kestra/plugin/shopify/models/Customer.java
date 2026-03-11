@@ -1,15 +1,17 @@
 package io.kestra.plugin.shopify.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.kestra.core.serializers.JacksonMapper;
-import lombok.Builder;
-import lombok.Data;
-import lombok.extern.jackson.Jacksonized;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.kestra.core.serializers.JacksonMapper;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 
 @Data
 @Builder
@@ -63,8 +65,6 @@ public class Customer {
     public static Customer fromMap(Map<String, Object> customerData) {
         return JacksonMapper.ofJson().convertValue(customerData, Customer.class);
     }
-
-
 
     @Data
     @Builder

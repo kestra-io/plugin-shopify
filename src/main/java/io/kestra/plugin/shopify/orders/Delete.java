@@ -1,22 +1,21 @@
 package io.kestra.plugin.shopify.orders;
 
+import java.net.URI;
+
 import io.kestra.core.http.HttpRequest;
 import io.kestra.core.http.HttpResponse;
 import io.kestra.core.http.client.HttpClient;
-import java.io.IOException;
-import java.lang.InterruptedException;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.validation.constraints.NotNull;
-import java.net.URI;
 
 @SuperBuilder
 @ToString
@@ -35,7 +34,7 @@ import java.net.URI;
             code = """
                 id: shopify_delete_order
                 namespace: company.team
-                
+
                 tasks:
                   - id: delete_order
                     type: io.kestra.plugin.shopify.orders.Delete
@@ -65,15 +64,19 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
             HttpRequest request = buildAuthenticatedRequest(runContext, "DELETE", uri, null);
 
             runContext.logger().debug("Deleting order {} from Shopify API: {}", rOrderId, uri);
-            
+
             handleRateLimit(runContext);
             HttpResponse<String> response = client.request(request, String.class);
-            
+
             // For DELETE requests, Shopify returns 200 with empty body on success
             if (response.getStatus().getCode() != 200) {
                 String errorBody = response.getBody() != null ? response.getBody() : "Unknown error";
-                throw new RuntimeException(String.format("Failed to delete order with status %d: %s", 
-                    response.getStatus().getCode(), errorBody));
+                throw new RuntimeException(
+                    String.format(
+                        "Failed to delete order with status %d: %s",
+                        response.getStatus().getCode(), errorBody
+                    )
+                );
             }
 
             runContext.logger().info("Successfully deleted order (ID: {}) from Shopify", rOrderId);
@@ -89,14 +92,14 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-        title = "Deleted order ID",
-        description = "Order ID passed to the delete request"
+            title = "Deleted order ID",
+            description = "Order ID passed to the delete request"
         )
         private final Long orderId;
 
         @Schema(
-        title = "Deletion status",
-        description = "True when Shopify responded 200 to the delete call"
+            title = "Deletion status",
+            description = "True when Shopify responded 200 to the delete call"
         )
         private final Boolean deleted;
     }

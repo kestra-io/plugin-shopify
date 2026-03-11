@@ -1,10 +1,11 @@
 package io.kestra.plugin.shopify.products;
 
-import io.kestra.core.http.client.HttpClient;
+import java.net.URI;
+import java.util.Map;
+
 import io.kestra.core.http.HttpRequest;
 import io.kestra.core.http.HttpResponse;
-import java.io.IOException;
-import java.lang.InterruptedException;
+import io.kestra.core.http.client.HttpClient;
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
@@ -13,12 +14,10 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Product;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.net.URI;
-import java.util.Map;
 
 @SuperBuilder
 @ToString
@@ -29,15 +28,15 @@ import java.util.Map;
     title = "Update Shopify product fields",
     description = "Updates a product via the Shopify Admin API. Only provided fields are patched; at least one field is required. Expects store domain, access token, and product ID."
 )
-    @Plugin(
-        examples = {
-            @Example(
-        title = "Update product title and status",
-        full = true,
-        code = """
+@Plugin(
+    examples = {
+        @Example(
+            title = "Update product title and status",
+            full = true,
+            code = """
                 id: shopify_update_product
                 namespace: company.team
-                
+
                 tasks:
                   - id: update_product
                     type: io.kestra.plugin.shopify.products.Update
@@ -141,81 +140,81 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
                 }
             }
 
-        if (bodyHtml != null) {
-        String rBodyHtml = runContext.render(bodyHtml).as(String.class).orElse(null);
-        if (rBodyHtml != null) {
-            productData.put("body_html", rBodyHtml);
-        }
-        }
-
-        if (vendor != null) {
-        String rVendor = runContext.render(vendor).as(String.class).orElse(null);
-        if (rVendor != null) {
-            productData.put("vendor", rVendor);
-        }
-        }
-
-        if (productType != null) {
-        String rProductType = runContext.render(productType).as(String.class).orElse(null);
-        if (rProductType != null) {
-            productData.put("product_type", rProductType);
-        }
-        }
-
-        if (tags != null) {
-        String rTags = runContext.render(tags).as(String.class).orElse(null);
-        if (rTags != null) {
-            productData.put("tags", rTags);
-        }
-        }
-
-        if (status != null) {
-        String rStatus = runContext.render(status).as(String.class).orElse(null);
-        if (rStatus != null) {
-            productData.put("status", rStatus);
-        }
-        }
-
-        if (handle != null) {
-        String rHandle = runContext.render(handle).as(String.class).orElse(null);
-        if (rHandle != null) {
-            productData.put("handle", rHandle);
-        }
-        }
-
-        if (templateSuffix != null) {
-        String rTemplateSuffix = runContext.render(templateSuffix).as(String.class).orElse(null);
-        if (rTemplateSuffix != null) {
-            productData.put("template_suffix", rTemplateSuffix);
-        }
-        }
-
-        if (publishedScope != null) {
-        String rPublishedScope = runContext.render(publishedScope).as(String.class).orElse(null);
-        if (rPublishedScope != null) {
-            productData.put("published_scope", rPublishedScope);
-        }
-        }
-
-        // Add SEO fields if provided
-        if (seoTitle != null || seoDescription != null) {
-        Map<String, Object> seoData = new java.util.HashMap<>();
-        if (seoTitle != null) {
-            String rSeoTitle = runContext.render(seoTitle).as(String.class).orElse(null);
-            if (rSeoTitle != null) {
-                seoData.put("title", rSeoTitle);
+            if (bodyHtml != null) {
+                String rBodyHtml = runContext.render(bodyHtml).as(String.class).orElse(null);
+                if (rBodyHtml != null) {
+                    productData.put("body_html", rBodyHtml);
+                }
             }
-        }
-        if (seoDescription != null) {
-            String rSeoDescription = runContext.render(seoDescription).as(String.class).orElse(null);
-            if (rSeoDescription != null) {
-                seoData.put("description", rSeoDescription);
+
+            if (vendor != null) {
+                String rVendor = runContext.render(vendor).as(String.class).orElse(null);
+                if (rVendor != null) {
+                    productData.put("vendor", rVendor);
+                }
             }
-        }
-        if (!seoData.isEmpty()) {
-            productData.put("seo", seoData);
-        }
-        }
+
+            if (productType != null) {
+                String rProductType = runContext.render(productType).as(String.class).orElse(null);
+                if (rProductType != null) {
+                    productData.put("product_type", rProductType);
+                }
+            }
+
+            if (tags != null) {
+                String rTags = runContext.render(tags).as(String.class).orElse(null);
+                if (rTags != null) {
+                    productData.put("tags", rTags);
+                }
+            }
+
+            if (status != null) {
+                String rStatus = runContext.render(status).as(String.class).orElse(null);
+                if (rStatus != null) {
+                    productData.put("status", rStatus);
+                }
+            }
+
+            if (handle != null) {
+                String rHandle = runContext.render(handle).as(String.class).orElse(null);
+                if (rHandle != null) {
+                    productData.put("handle", rHandle);
+                }
+            }
+
+            if (templateSuffix != null) {
+                String rTemplateSuffix = runContext.render(templateSuffix).as(String.class).orElse(null);
+                if (rTemplateSuffix != null) {
+                    productData.put("template_suffix", rTemplateSuffix);
+                }
+            }
+
+            if (publishedScope != null) {
+                String rPublishedScope = runContext.render(publishedScope).as(String.class).orElse(null);
+                if (rPublishedScope != null) {
+                    productData.put("published_scope", rPublishedScope);
+                }
+            }
+
+            // Add SEO fields if provided
+            if (seoTitle != null || seoDescription != null) {
+                Map<String, Object> seoData = new java.util.HashMap<>();
+                if (seoTitle != null) {
+                    String rSeoTitle = runContext.render(seoTitle).as(String.class).orElse(null);
+                    if (rSeoTitle != null) {
+                        seoData.put("title", rSeoTitle);
+                    }
+                }
+                if (seoDescription != null) {
+                    String rSeoDescription = runContext.render(seoDescription).as(String.class).orElse(null);
+                    if (rSeoDescription != null) {
+                        seoData.put("description", rSeoDescription);
+                    }
+                }
+                if (!seoData.isEmpty()) {
+                    productData.put("seo", seoData);
+                }
+            }
 
             if (productData.isEmpty()) {
                 throw new IllegalArgumentException("At least one field must be provided to update the product");
@@ -230,22 +229,24 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
             HttpRequest request = buildAuthenticatedRequest(runContext, "PUT", uri, requestBody);
 
             runContext.logger().debug("Updating product {} in Shopify API: {}", rProductId, uri);
-            
+
             handleRateLimit(runContext);
             HttpResponse<String> response = client.request(request, String.class);
             Map<String, Object> responseData = parseResponse(response);
-        
+
             @SuppressWarnings("unchecked")
             Map<String, Object> updatedProductData = (Map<String, Object>) responseData.get("product");
-            
+
             if (updatedProductData == null) {
                 throw new RuntimeException("Failed to update product - no product data returned");
             }
-            
+
             Product updatedProduct = JacksonMapper.ofJson().convertValue(updatedProductData, Product.class);
 
-            runContext.logger().info("Updated product '{}' (ID: {}) in Shopify", 
-                updatedProduct.getTitle(), updatedProduct.getId());
+            runContext.logger().info(
+                "Updated product '{}' (ID: {}) in Shopify",
+                updatedProduct.getTitle(), updatedProduct.getId()
+            );
 
             return Output.builder()
                 .product(updatedProduct)
@@ -257,8 +258,8 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-        title = "Updated product",
-        description = "Product object returned after the update"
+            title = "Updated product",
+            description = "Product object returned after the update"
         )
         private final Product product;
     }

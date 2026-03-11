@@ -1,17 +1,19 @@
 package io.kestra.plugin.shopify.products;
 
-import io.kestra.core.junit.annotations.KestraTest;
-import io.kestra.core.runners.RunContext;
-import io.kestra.core.runners.RunContextFactory;
-import io.kestra.core.utils.TestsUtils;
-import io.kestra.core.models.property.Property;
-import io.kestra.core.models.tasks.common.FetchType;
-import io.kestra.plugin.shopify.models.Product;
-import jakarta.inject.Inject;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
-import java.util.Map;
+import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.models.property.Property;
+import io.kestra.core.models.tasks.common.FetchType;
+import io.kestra.core.runners.RunContext;
+import io.kestra.core.runners.RunContextFactory;
+import io.kestra.core.utils.TestsUtils;
+import io.kestra.plugin.shopify.models.Product;
+
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -43,7 +45,7 @@ class ListProductsTest {
         assertThat(output, notNullValue());
         assertThat(output.getCount(), greaterThanOrEqualTo(0));
         assertThat(output.getProducts(), notNullValue());
-        
+
         if (!output.getProducts().isEmpty()) {
             Product firstProduct = output.getProducts().get(0);
             assertThat(firstProduct.getId(), notNullValue());
@@ -54,7 +56,8 @@ class ListProductsTest {
     @Test
     void testListProductsRequiredFields() {
         // Test that storeDomain is required
-        assertThrows(Exception.class, () -> {
+        assertThrows(Exception.class, () ->
+        {
             List task = List.builder()
                 .id("test-task")
                 .type(List.class.getName())
@@ -66,7 +69,8 @@ class ListProductsTest {
         });
 
         // Test that accessToken is required
-        assertThrows(Exception.class, () -> {
+        assertThrows(Exception.class, () ->
+        {
             List task = List.builder()
                 .id("test-task")
                 .type(List.class.getName())

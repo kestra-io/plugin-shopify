@@ -1,5 +1,8 @@
 package io.kestra.plugin.shopify.customers;
 
+import java.net.URI;
+import java.util.Map;
+
 import io.kestra.core.http.HttpRequest;
 import io.kestra.core.http.HttpResponse;
 import io.kestra.core.http.client.HttpClient;
@@ -11,13 +14,11 @@ import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.JacksonMapper;
 import io.kestra.plugin.shopify.AbstractShopifyTask;
 import io.kestra.plugin.shopify.models.Customer;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import jakarta.validation.constraints.NotNull;
-import java.net.URI;
-import java.util.Map;
 
 @SuperBuilder
 @ToString
@@ -36,7 +37,7 @@ import java.util.Map;
             code = """
                 id: shopify_get_customer
                 namespace: company.team
-                
+
                 tasks:
                   - id: get_customer
                     type: io.kestra.plugin.shopify.customers.Get
@@ -60,27 +61,29 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
     public Output run(RunContext runContext) throws Exception {
         try (HttpClient client = HttpClient.builder().runContext(runContext).build()) {
             Long rCustomerId = runContext.render(customerId).as(Long.class).orElseThrow();
-            
+
             URI uri = buildApiUrl(runContext, "/customers/" + rCustomerId + ".json");
             HttpRequest request = buildAuthenticatedRequest(runContext, "GET", uri, null);
 
             runContext.logger().debug("Getting customer {} from Shopify API: {}", rCustomerId, uri);
-            
+
             handleRateLimit(runContext);
             HttpResponse<String> response = client.request(request, String.class);
             Map<String, Object> responseData = parseResponse(response);
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Object> customerData = (Map<String, Object>) responseData.get("customer");
-            
+
             if (customerData == null) {
                 throw new RuntimeException("Customer not found: " + rCustomerId);
             }
-            
+
             Customer customer = JacksonMapper.ofJson().convertValue(customerData, Customer.class);
 
-            runContext.logger().info("Retrieved customer '{}' (ID: {}) from Shopify", 
-                customer.getEmail(), customer.getId());
+            runContext.logger().info(
+                "Retrieved customer '{}' (ID: {}) from Shopify",
+                customer.getEmail(), customer.getId()
+            );
 
             return Output.builder()
                 .customer(customer)
