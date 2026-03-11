@@ -46,14 +46,14 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Shopify Admin API version path segment; defaults to 2024-10"
     )
     @Builder.Default
-    protected Property<String> apiVersion = Property.of("2024-10");
+    protected Property<String> apiVersion = Property.ofValue("2024-10");
 
     @Schema(
         title = "Rate limit delay",
         description = "Sleep between API calls to respect Shopify rate limits; default 500ms"
     )
     @Builder.Default
-    protected Property<Duration> rateLimitDelay = Property.of(Duration.ofMillis(500));
+    protected Property<Duration> rateLimitDelay = Property.ofValue(Duration.ofMillis(500));
 
     protected URI buildApiUrl(RunContext runContext, String path) throws Exception {
         String rStoreDomain = runContext.render(storeDomain).as(String.class).orElseThrow(() -> 

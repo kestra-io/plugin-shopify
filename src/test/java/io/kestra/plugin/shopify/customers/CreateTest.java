@@ -26,8 +26,8 @@ class CreateTest {
             Create task = Create.builder()
                 .id("test-task")
                 .type(Create.class.getName())
-                .accessToken(Property.of("test-token"))
-                .email(Property.of("test@example.com"))
+                .accessToken(Property.ofValue("test-token"))
+                .email(Property.ofValue("test@example.com"))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -39,8 +39,8 @@ class CreateTest {
             Create task = Create.builder()
                 .id("test-task")
                 .type(Create.class.getName())
-                .storeDomain(Property.of("test-store.myshopify.com"))
-                .email(Property.of("test@example.com"))
+                .storeDomain(Property.ofValue("test-store.myshopify.com"))
+                .email(Property.ofValue("test@example.com"))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -52,8 +52,8 @@ class CreateTest {
             Create task = Create.builder()
                 .id("test-task")
                 .type(Create.class.getName())
-                .storeDomain(Property.of("test-store.myshopify.com"))
-                .accessToken(Property.of("test-token"))
+                .storeDomain(Property.ofValue("test-store.myshopify.com"))
+                .accessToken(Property.ofValue("test-token"))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -67,11 +67,11 @@ class CreateTest {
         Create task = Create.builder()
             .id("test-task")
             .type(Create.class.getName())
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .email(Property.of("test@example.com"))
-            .firstName(Property.of("John"))
-            .lastName(Property.of("Doe"))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .email(Property.ofValue("test@example.com"))
+            .firstName(Property.ofValue("John"))
+            .lastName(Property.ofValue("Doe"))
             .build();
 
         assertThat(task.getStoreDomain(), notNullValue());

@@ -26,8 +26,8 @@ class GetTest {
             Get task = Get.builder()
                 .id("test-task")
                 .type(Get.class.getName())
-                .accessToken(Property.of("test-token"))
-                .customerId(Property.of(123L))
+                .accessToken(Property.ofValue("test-token"))
+                .customerId(Property.ofValue(123L))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -39,8 +39,8 @@ class GetTest {
             Get task = Get.builder()
                 .id("test-task")
                 .type(Get.class.getName())
-                .storeDomain(Property.of("test-store.myshopify.com"))
-                .customerId(Property.of(123L))
+                .storeDomain(Property.ofValue("test-store.myshopify.com"))
+                .customerId(Property.ofValue(123L))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -52,8 +52,8 @@ class GetTest {
             Get task = Get.builder()
                 .id("test-task")
                 .type(Get.class.getName())
-                .storeDomain(Property.of("test-store.myshopify.com"))
-                .accessToken(Property.of("test-token"))
+                .storeDomain(Property.ofValue("test-store.myshopify.com"))
+                .accessToken(Property.ofValue("test-token"))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -67,9 +67,9 @@ class GetTest {
         Get task = Get.builder()
             .id("test-task")
             .type(Get.class.getName())
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .customerId(Property.of(123L))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .customerId(Property.ofValue(123L))
             .build();
 
         assertThat(task.getStoreDomain(), notNullValue());
