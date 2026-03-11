@@ -94,7 +94,7 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         description = "Controls result handling: FETCH (default), FETCH_ONE, or STORE"
     )
     @Builder.Default
-    private Property<FetchType> fetchType = Property.of(FetchType.FETCH);
+    private Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
 
     @Schema(
         title = "Limit",

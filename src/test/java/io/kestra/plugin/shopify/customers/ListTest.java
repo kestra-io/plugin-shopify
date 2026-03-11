@@ -32,9 +32,9 @@ class ListTest {
         List task = List.builder()
             .id("test-task")
             .type(List.class.getName())
-            .storeDomain(Property.of(storeDomain))
-            .accessToken(Property.of(accessToken))
-            .limit(Property.of(5))
+            .storeDomain(Property.ofValue(storeDomain))
+            .accessToken(Property.ofValue(accessToken))
+            .limit(Property.ofValue(5))
             .build();
 
         RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -58,7 +58,7 @@ class ListTest {
             List task = List.builder()
                 .id("test-task")
                 .type(List.class.getName())
-                .accessToken(Property.of("test-token"))
+                .accessToken(Property.ofValue("test-token"))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -70,7 +70,7 @@ class ListTest {
             List task = List.builder()
                 .id("test-task")
                 .type(List.class.getName())
-                .storeDomain(Property.of("test-store.myshopify.com"))
+                .storeDomain(Property.ofValue("test-store.myshopify.com"))
                 .build();
 
             RunContext runContext = TestsUtils.mockRunContext(runContextFactory, task, Map.of());
@@ -84,10 +84,10 @@ class ListTest {
         List task = List.builder()
             .id("test-task")
             .type(List.class.getName())
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .limit(Property.of(10))
-            .fetchType(Property.of(FetchType.FETCH))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .limit(Property.ofValue(10))
+            .fetchType(Property.ofValue(FetchType.FETCH))
             .build();
 
         assertThat(task.getStoreDomain(), notNullValue());
@@ -100,15 +100,15 @@ class ListTest {
     void testFetchTypeConfiguration() {
         // Test FetchType property configuration
         List task1 = List.builder()
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .fetchType(Property.of(FetchType.FETCH))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .fetchType(Property.ofValue(FetchType.FETCH))
             .build();
 
         List task2 = List.builder()
-            .storeDomain(Property.of("test-store.myshopify.com"))
-            .accessToken(Property.of("test-token"))
-            .fetchType(Property.of(FetchType.STORE))
+            .storeDomain(Property.ofValue("test-store.myshopify.com"))
+            .accessToken(Property.ofValue("test-token"))
+            .fetchType(Property.ofValue(FetchType.STORE))
             .build();
 
         assertNotNull(task1.getFetchType());
