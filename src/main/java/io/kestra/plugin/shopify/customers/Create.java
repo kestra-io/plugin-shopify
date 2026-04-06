@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -58,24 +59,28 @@ public class Create extends AbstractShopifyTask implements RunnableTask<Create.O
         description = "Email address for the new customer (required)"
     )
     @NotNull
+    @PluginProperty(group = "main")
     protected Property<String> email;
 
     @Schema(
         title = "First name",
         description = "Optional given name for the customer"
     )
+    @PluginProperty(group = "advanced")
     protected Property<String> firstName;
 
     @Schema(
         title = "Last name",
         description = "Optional family name for the customer"
     )
+    @PluginProperty(group = "advanced")
     protected Property<String> lastName;
 
     @Schema(
         title = "Phone number",
         description = "Optional phone number sent to Shopify"
     )
+    @PluginProperty(group = "advanced")
     protected Property<String> phone;
 
     @Override

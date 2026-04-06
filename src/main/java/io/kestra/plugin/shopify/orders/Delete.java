@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -52,6 +53,7 @@ public class Delete extends AbstractShopifyTask implements RunnableTask<Delete.O
         description = "Shopify order ID to delete"
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<Long> orderId;
 
     @Override

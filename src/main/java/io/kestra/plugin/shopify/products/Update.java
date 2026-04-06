@@ -18,6 +18,7 @@ import io.kestra.plugin.shopify.models.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -56,72 +57,84 @@ public class Update extends AbstractShopifyTask implements RunnableTask<Update.O
         title = "Product ID",
         description = "Shopify product ID to update (required)"
     )
+    @PluginProperty(group = "advanced")
     private Property<Long> productId;
 
     @Schema(
         title = "Product title",
         description = "New product title"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> title;
 
     @Schema(
         title = "Product description HTML",
         description = "HTML body for the product description"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> bodyHtml;
 
     @Schema(
         title = "Vendor",
         description = "Vendor name"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> vendor;
 
     @Schema(
         title = "Product type",
         description = "Product type string"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> productType;
 
     @Schema(
         title = "Tags",
         description = "Comma-separated tags"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> tags;
 
     @Schema(
         title = "Status",
         description = "Product status: active, archived, or draft"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> status;
 
     @Schema(
         title = "Handle",
         description = "Unique URL handle for the product"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> handle;
 
     @Schema(
         title = "Template suffix",
         description = "Liquid template suffix used for the product page"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> templateSuffix;
 
     @Schema(
         title = "Published scope",
         description = "Publish scope (web or global)"
     )
+    @PluginProperty(group = "destination")
     private Property<String> publishedScope;
 
     @Schema(
         title = "SEO title",
         description = "SEO title to set in Shopify"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> seoTitle;
 
     @Schema(
         title = "SEO description",
         description = "SEO meta description"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> seoDescription;
 
     @Override

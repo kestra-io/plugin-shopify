@@ -22,6 +22,7 @@ import io.kestra.plugin.shopify.models.PublishedStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -90,72 +91,84 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         description = "Controls result handling: FETCH (default), FETCH_ONE, or STORE"
     )
     @Builder.Default
+    @PluginProperty(group = "processing")
     private Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
 
     @Schema(
         title = "Limit",
         description = "Maximum number of products to retrieve (1-250)"
     )
+    @PluginProperty(group = "processing")
     private Property<Integer> limit;
 
     @Schema(
         title = "Since ID",
         description = "Retrieve products created after this Shopify product ID"
     )
+    @PluginProperty(group = "advanced")
     private Property<Long> sinceId;
 
     @Schema(
         title = "Product status filter",
         description = "Product status filter: active, archived, or draft"
     )
+    @PluginProperty(group = "advanced")
     private Property<ProductStatus> status;
 
     @Schema(
         title = "Published status filter",
         description = "Published state filter: published, unpublished, or any"
     )
+    @PluginProperty(group = "destination")
     private Property<PublishedStatus> publishedStatus;
 
     @Schema(
         title = "Product type filter",
         description = "Filter products by product type string"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> productType;
 
     @Schema(
         title = "Vendor filter",
         description = "Filter products by vendor"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> vendor;
 
     @Schema(
         title = "Handle filter",
         description = "Filter products by product handle"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> handle;
 
     @Schema(
         title = "Created at min",
         description = "Return products created at or after this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "destination")
     private Property<String> createdAtMin;
 
     @Schema(
         title = "Created at max",
         description = "Return products created at or before this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "destination")
     private Property<String> createdAtMax;
 
     @Schema(
         title = "Updated at min",
         description = "Return products updated at or after this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> updatedAtMin;
 
     @Schema(
         title = "Updated at max",
         description = "Return products updated at or before this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> updatedAtMax;
 
     @Override

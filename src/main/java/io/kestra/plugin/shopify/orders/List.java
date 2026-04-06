@@ -20,6 +20,7 @@ import io.kestra.plugin.shopify.models.Order;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -88,60 +89,70 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
         description = "Controls result handling: FETCH (default), FETCH_ONE, or STORE"
     )
     @Builder.Default
+    @PluginProperty(group = "processing")
     private Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
 
     @Schema(
         title = "Limit",
         description = "Maximum number of orders to retrieve (1-250)"
     )
+    @PluginProperty(group = "processing")
     private Property<Integer> limit;
 
     @Schema(
         title = "Since ID",
         description = "Retrieve orders created after this Shopify order ID"
     )
+    @PluginProperty(group = "advanced")
     private Property<Long> sinceId;
 
     @Schema(
         title = "Status filter",
         description = "Order status filter: open, closed, cancelled, or any"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> status;
 
     @Schema(
         title = "Financial status filter",
         description = "Financial status filter (e.g., paid, pending, refunded)"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> financialStatus;
 
     @Schema(
         title = "Fulfillment status filter",
         description = "Fulfillment status filter (e.g., shipped, partial, unshipped)"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> fulfillmentStatus;
 
     @Schema(
         title = "Created at min",
         description = "Return orders created at or after this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "destination")
     private Property<String> createdAtMin;
 
     @Schema(
         title = "Created at max",
         description = "Return orders created at or before this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "destination")
     private Property<String> createdAtMax;
 
     @Schema(
         title = "Updated at min",
         description = "Return orders updated at or after this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> updatedAtMin;
 
     @Schema(
         title = "Updated at max",
         description = "Return orders updated at or before this ISO-8601 timestamp"
     )
+    @PluginProperty(group = "advanced")
     private Property<String> updatedAtMax;
 
     @Override

@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -32,6 +33,7 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Store domain used for Admin API calls (e.g., my-store.myshopify.com)"
     )
     @NotNull
+    @PluginProperty(group = "main")
     protected Property<String> storeDomain;
 
     @Schema(
@@ -39,6 +41,7 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Private app Admin API access token sent as X-Shopify-Access-Token"
     )
     @NotNull
+    @PluginProperty(group = "main")
     protected Property<String> accessToken;
 
     @Schema(
@@ -46,6 +49,7 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Shopify Admin API version path segment; defaults to 2024-10"
     )
     @Builder.Default
+    @PluginProperty(group = "advanced")
     protected Property<String> apiVersion = Property.ofValue("2024-10");
 
     @Schema(
@@ -53,6 +57,7 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Sleep between API calls to respect Shopify rate limits; default 500ms"
     )
     @Builder.Default
+    @PluginProperty(group = "advanced")
     protected Property<Duration> rateLimitDelay = Property.ofValue(Duration.ofMillis(500));
 
     protected URI buildApiUrl(RunContext runContext, String path) throws Exception {
