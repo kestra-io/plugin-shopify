@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -55,6 +56,7 @@ public class Get extends AbstractShopifyTask implements RunnableTask<Get.Output>
         description = "Shopify customer ID to retrieve"
     )
     @NotNull
+    @PluginProperty(group = "main")
     private Property<Long> customerId;
 
     @Override

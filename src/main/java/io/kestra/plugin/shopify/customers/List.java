@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -73,12 +74,14 @@ public class List extends AbstractShopifyTask implements RunnableTask<List.Outpu
     )
     @Builder.Default
     @NotNull
+    @PluginProperty(group = "processing")
     protected Property<FetchType> fetchType = Property.ofValue(FetchType.FETCH);
 
     @Schema(
         title = "Customer limit",
         description = "Maximum customers to return (1-250). Shopify caps at 250."
     )
+    @PluginProperty(group = "processing")
     protected Property<Integer> limit;
 
     @Override
