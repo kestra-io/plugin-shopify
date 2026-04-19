@@ -1,68 +1,17 @@
+
+
 # Shopify Plugin for Kestra
 
-A comprehensive plugin for integrating with Shopify Admin API, enabling complete management of products, orders, and customers directly from your Kestra workflows.
+## Why
 
-## Features
+- What user problem does this solve? Teams need to call the Shopify Admin API to manage products, orders, and customers from orchestrated workflows instead of relying on manual console work, ad hoc scripts, or disconnected schedulers.
+- Why would a team adopt this plugin in a workflow? It keeps Shopify steps in the same Kestra flow as upstream preparation, approvals, retries, notifications, and downstream systems.
+- What operational/business outcome does it enable? It reduces manual handoffs and fragmented tooling while improving reliability, traceability, and delivery speed for processes that depend on Shopify.
 
-### 🛍️ Products
-- **List** - Retrieve products with filtering and pagination
-- **Get** - Fetch a specific product by ID
-- **Create** - Create new products with variants and images  
-- **Update** - Update existing product information
-- **Delete** - Remove products from your store
+## What
 
-### 📦 Orders
-- **List** - Retrieve orders with filtering and pagination
-- **Get** - Fetch a specific order by ID
-- **Create** - Create new orders programmatically
-- **Delete** - Cancel or remove orders
-<p align="center">
-  <a href="https://twitter.com/kestra_io" style="margin: 0 10px;">
-        <img src="https://kestra.io/twitter.svg" alt="twitter" width="35" height="25" /></a>
-  <a href="https://www.linkedin.com/company/kestra/" style="margin: 0 10px;">
-        <img src="https://kestra.io/linkedin.svg" alt="linkedin" width="35" height="25" /></a>
-  <a href="https://www.youtube.com/@kestra-io" style="margin: 0 10px;">
-        <img src="https://kestra.io/youtube.svg" alt="youtube" width="35" height="25" /></a>
-</p>
-
-### 👥 Customers
-- **List** - Retrieve customers with filtering and pagination
-- **Get** - Fetch a specific customer by ID
-- **Create** - Create new customer accounts
-- **Delete** - Remove customer accounts
-
-### ⚡ Triggers
-- **OrderCreated** - Polling trigger for new orders in your store
-
-## Authentication
-
-This plugin requires a Shopify Admin API access token. You can obtain this by:
-
-1. Creating a private app in your Shopify admin
-2. Generating an Admin API access token with appropriate permissions
-3. Storing the token securely using Kestra's secret management
-
-Required permissions:
-- `read_products` and `write_products` for product operations
-- `read_orders` and `write_orders` for order operations  
-- `read_customers` and `write_customers` for customer operations
-
-## Quick Start
-
-```yaml
-id: shopify_example
-namespace: company.team
-
-tasks:
-  - id: get_products
-    type: io.kestra.plugin.shopify.products.List
-    storeDomain: my-store.myshopify.com
-    accessToken: "{{ secret('SHOPIFY_ACCESS_TOKEN') }}"
-    limit: 10
-    status: ACTIVE
-```
-
-![Kestra orchestrator](https://kestra.io/video.gif)
+- Provides plugin components under `io.kestra.plugin.shopify`.
+- Includes classes such as `Delete`, `List`, `Create`, `Get`.
 
 ## Documentation
 
