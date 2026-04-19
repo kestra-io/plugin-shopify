@@ -7,8 +7,9 @@
 
 ## Why
 
-- This plugin integrates Kestra with Shopify Customer.
-- It provides tasks that create, list, fetch, or delete Shopify customers.
+- What user problem does this solve? Teams need to call the Shopify Admin API to manage products, orders, and customers from orchestrated workflows instead of relying on manual console work, ad hoc scripts, or disconnected schedulers.
+- Why would a team adopt this plugin in a workflow? It keeps Shopify steps in the same Kestra flow as upstream preparation, approvals, retries, notifications, and downstream systems.
+- What operational/business outcome does it enable? It reduces manual handoffs and fragmented tooling while improving reliability, traceability, and delivery speed for processes that depend on Shopify.
 
 ## How
 
