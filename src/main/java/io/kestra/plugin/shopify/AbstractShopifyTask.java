@@ -41,7 +41,7 @@ public abstract class AbstractShopifyTask extends Task {
         description = "Private app Admin API access token sent as X-Shopify-Access-Token"
     )
     @NotNull
-    @PluginProperty(group = "main")
+    @PluginProperty(group = "main", secret = true)
     protected Property<String> accessToken;
 
     @Schema(
