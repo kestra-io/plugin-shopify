@@ -19,42 +19,42 @@ variables:
 
 tasks:
   - id: process_new_orders
-    type: io.kestra.plugin.core.flow.ForEach
+    type: io.kestra.plugin.core.flow.Loop
     value: "{{ trigger.orders }}"
     tasks:
       - id: log_order_details
         type: io.kestra.plugin.core.log.Log
         message: |
           Processing new order:
-          - Order Number: {{ taskrun.value.name }}
-          - Order ID: {{ taskrun.value.id }}
-          - Customer Email: {{ taskrun.value.email }}
-          - Total Amount: {{ taskrun.value.totalPrice }} {{ taskrun.value.currency }}
-          - Financial Status: {{ taskrun.value.financialStatus }}
-          - Fulfillment Status: {{ taskrun.value.fulfillmentStatus }}
-          - Created At: {{ taskrun.value.createdAt }}
-          - Line Items: {{ taskrun.value.lineItems | length }}
+          - Order Number: {{ item.value.name }}
+          - Order ID: {{ item.value.id }}
+          - Customer Email: {{ item.value.email }}
+          - Total Amount: {{ item.value.totalPrice }} {{ item.value.currency }}
+          - Financial Status: {{ item.value.financialStatus }}
+          - Fulfillment Status: {{ item.value.fulfillmentStatus }}
+          - Created At: {{ item.value.createdAt }}
+          - Line Items: {{ item.value.lineItems | length }}
 
       - id: get_order_details
         type: io.kestra.plugin.shopify.orders.GetOrder
         storeDomain: "{{ vars.store_domain }}"
         accessToken: "{{ vars.access_token }}"
-        orderId: "{{ taskrun.value.id }}"
+        orderId: "{{ item.value.id }}"
 
       - id: process_order_items
-        type: io.kestra.plugin.core.flow.ForEach
+        type: io.kestra.plugin.core.flow.Loop
         value: "{{ outputs.get_order_details.order.lineItems }}"
         tasks:
           - id: log_line_item
             type: io.kestra.plugin.core.log.Log
             message: |
               Line Item:
-              - Product: {{ taskrun.value.title }}
-              - SKU: {{ taskrun.value.sku }}
-              - Quantity: {{ taskrun.value.quantity }}
-              - Price: {{ taskrun.value.price }}
-              - Product ID: {{ taskrun.value.productId }}
-              - Variant ID: {{ taskrun.value.variantId }}
+              - Product: {{ item.value.title }}
+              - SKU: {{ item.value.sku }}
+              - Quantity: {{ item.value.quantity }}
+              - Price: {{ item.value.price }}
+              - Product ID: {{ item.value.productId }}
+              - Variant ID: {{ item.value.variantId }}
 
   - id: send_notification
     type: io.kestra.plugin.core.log.Log

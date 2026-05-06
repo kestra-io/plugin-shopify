@@ -21,27 +21,27 @@ tasks:
     createdAtMin: "{{ now() | dateAdd(-7, 'DAYS') | dateFormat('yyyy-MM-ddTHH:mm:ssZ') }}"
 
   - id: filter_paid_orders
-    type: io.kestra.plugin.core.flow.ForEach
+    type: io.kestra.plugin.core.flow.Loop
     value: "{{ outputs.list_recent_orders.orders }}"
     tasks:
       - id: process_paid_order
         type: io.kestra.plugin.core.flow.If
-        condition: "{{ taskrun.value.financialStatus == 'paid' }}"
+        condition: "{{ item.value.financialStatus == 'paid' }}"
         then:
           - id: get_order_details
             type: io.kestra.plugin.shopify.orders.GetOrder
             storeDomain: "{{ vars.store_domain }}"
             accessToken: "{{ vars.access_token }}"
-            orderId: "{{ taskrun.value.id }}"
+            orderId: "{{ item.value.id }}"
 
           - id: log_order_processing
             type: io.kestra.plugin.core.log.Log
             message: |
               Processing paid order:
-              - Order: {{ taskrun.value.name }}
-              - Customer: {{ taskrun.value.customer.email }}
-              - Total: {{ taskrun.value.totalPrice }} {{ taskrun.value.currency }}
-              - Items: {{ taskrun.value.lineItems | length }}
+              - Order: {{ item.value.name }}
+              - Customer: {{ item.value.customer.email }}
+              - Total: {{ item.value.totalPrice }} {{ item.value.currency }}
+              - Items: {{ item.value.lineItems | length }}
 
   - id: generate_order_summary
     type: io.kestra.plugin.core.log.Log
