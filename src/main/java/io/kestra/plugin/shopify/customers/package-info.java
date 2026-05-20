@@ -1,5 +1,5 @@
 @PluginSubGroup(
-    title = "Shopify Customer",
+    title = "Shopify Customers",
     description = "This sub-group of plugins contains tasks to interact with Shopify Customers.",
     categories = { PluginSubGroup.PluginCategory.BUSINESS }
 )

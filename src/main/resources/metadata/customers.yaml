@@ -1,6 +1,6 @@
 group: io.kestra.plugin.shopify.customers
 name: "customers"
-title: "Shopify Customer"
+title: "Shopify Customers"
 description: "Tasks that create, list, fetch, or delete Shopify customers."
 body: "Provide the store domain, Admin API token, and optional API version to manage customer records, including listing with filters or deleting by ID, while honoring Shopify rate limits between calls."
 videos: []
