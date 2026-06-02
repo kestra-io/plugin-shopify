@@ -19,11 +19,11 @@ variables:
 
 tasks:
   - id: process_new_orders
-    type: io.kestra.core.tasks.flows.ForEach
+    type: io.kestra.plugin.core.flow.ForEach
     value: "{{ trigger.orders }}"
     tasks:
       - id: log_order_details
-        type: io.kestra.core.tasks.log.Log
+        type: io.kestra.plugin.core.log.Log
         message: |
           Processing new order:
           - Order Number: {{ taskrun.value.name }}
@@ -42,11 +42,11 @@ tasks:
         orderId: "{{ taskrun.value.id }}"
 
       - id: process_order_items
-        type: io.kestra.core.tasks.flows.ForEach
+        type: io.kestra.plugin.core.flow.ForEach
         value: "{{ outputs.get_order_details.order.lineItems }}"
         tasks:
           - id: log_line_item
-            type: io.kestra.core.tasks.log.Log
+            type: io.kestra.plugin.core.log.Log
             message: |
               Line Item:
               - Product: {{ taskrun.value.title }}
@@ -57,7 +57,7 @@ tasks:
               - Variant ID: {{ taskrun.value.variantId }}
 
   - id: send_notification
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: |
       Order Processing Summary:
       - Total new orders processed: {{ trigger.count }}

@@ -12,7 +12,7 @@ variables:
 tasks:
   # Product Management Tests
   - id: product_management_tests
-    type: io.kestra.core.tasks.flows.Sequential
+    type: io.kestra.plugin.core.flow.Sequential
     tasks:
       - id: list_products_fetch
         type: io.kestra.plugin.shopify.products.ListProducts
@@ -55,7 +55,7 @@ tasks:
 
   # Customer Management Tests
   - id: customer_management_tests
-    type: io.kestra.core.tasks.flows.Sequential
+    type: io.kestra.plugin.core.flow.Sequential
     tasks:
       - id: list_customers
         type: io.kestra.plugin.shopify.customers.List
@@ -82,7 +82,7 @@ tasks:
 
   # Order Management Tests
   - id: order_management_tests
-    type: io.kestra.core.tasks.flows.Sequential
+    type: io.kestra.plugin.core.flow.Sequential
     tasks:
       - id: list_orders_fetch
         type: io.kestra.plugin.shopify.orders.ListOrders
@@ -101,7 +101,7 @@ tasks:
 
   # Cleanup Operations
   - id: cleanup_operations
-    type: io.kestra.core.tasks.flows.Sequential
+    type: io.kestra.plugin.core.flow.Sequential
     tasks:
       - id: delete_test_product
         type: io.kestra.plugin.shopify.products.DeleteProduct
@@ -117,7 +117,7 @@ tasks:
 
   # Final Validation Summary
   - id: qa_validation_summary
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: |
       🎉 SHOPIFY PLUGIN QA VALIDATION COMPLETE! 🎉
       ================================================
