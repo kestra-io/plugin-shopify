@@ -21,11 +21,11 @@ tasks:
     createdAtMin: "{{ now() | dateAdd(-7, 'DAYS') | dateFormat('yyyy-MM-ddTHH:mm:ssZ') }}"
 
   - id: filter_paid_orders
-    type: io.kestra.core.tasks.flows.ForEach
+    type: io.kestra.plugin.core.flow.ForEach
     value: "{{ outputs.list_recent_orders.orders }}"
     tasks:
       - id: process_paid_order
-        type: io.kestra.core.tasks.flows.If
+        type: io.kestra.plugin.core.flow.If
         condition: "{{ taskrun.value.financialStatus == 'paid' }}"
         then:
           - id: get_order_details
@@ -35,7 +35,7 @@ tasks:
             orderId: "{{ taskrun.value.id }}"
 
           - id: log_order_processing
-            type: io.kestra.core.tasks.log.Log
+            type: io.kestra.plugin.core.log.Log
             message: |
               Processing paid order:
               - Order: {{ taskrun.value.name }}
@@ -44,7 +44,7 @@ tasks:
               - Items: {{ taskrun.value.lineItems | length }}
 
   - id: generate_order_summary
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: |
       Order Processing Summary:
       - Total orders retrieved: {{ outputs.list_recent_orders.count }}

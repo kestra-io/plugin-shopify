@@ -57,7 +57,7 @@ tasks:
     customerId: "{{ outputs.create_demo_customer.customer.id }}"
 
   - id: log_results
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: |
       Customer workflow completed:
       - Listed {{ outputs.list_recent_customers.count }} recent customers

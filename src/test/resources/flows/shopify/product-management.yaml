@@ -57,7 +57,7 @@ tasks:
     status: "archived"
 
   - id: log_results
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: |
       Product workflow completed:
       - Listed {{ outputs.list_products.count }} products
