@@ -107,7 +107,7 @@ tasks:
     limit: 1
 
   - id: log_result
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: "✅ Shopify connection successful! Found {{ outputs.test_products.count }} products."
 ```
 
