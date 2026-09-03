@@ -4,7 +4,7 @@ Manage customers, orders, and products in Shopify from Kestra flows.
 
 ## Authentication
 
-Set `storeDomain` to your Shopify store domain (e.g. `my-store.myshopify.com`) and `accessToken` to your Admin API access token. Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and apply connection properties globally with [plugin defaults](https://kestra.io/docs/workflow-components/plugin-defaults).
+Set `storeDomain` to your Shopify store domain (e.g. `my-store.myshopify.com`) and `accessToken` to your Admin API access token. Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and set connection properties on each task.
 
 ## Tasks
 
